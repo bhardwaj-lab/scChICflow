@@ -1,0 +1,18 @@
+## cluster parameters
+cluster_cmd: 'qsub -cwd -j y -pe threaded {threads} -l h_vmem={cluster.memory},h_rt=24:00:00 -N {rule}.snakemake -S /bin/bash'
+latency_wait: 300
+cluster_logDir: cluster_logs
+__default__:
+    memory: 20G
+transcript_map:
+    memory: 40G
+velocity_map:
+    memory: 40G
+transcript_index:
+    memory: 80G
+velocity_index:
+    memory: 80G
+get_tcc:
+    memory: 40G
+get_geneCounts:
+    memory: 40G

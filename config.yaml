@@ -1,0 +1,10 @@
+## workflow parameters
+## FASTQ file extension (default: ".fastq.gz")
+ext: '.fastq.gz'
+## paired-end read name extension (default: ["_R1", "_R2"])
+reads: ["_R1","_R2"]
+downsample:
+trim: True
+trimmerOptions: ""
+barcode_tsv: '/hpc/hub_oudenaarden/vbhardwaj/annotations/celseq2_barcodes.csv'
+bwa_index: '/hpc/hub_oudenaarden/group_references/ensembl/95/mus_musculus/annotations.gtf'
