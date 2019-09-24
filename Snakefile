@@ -62,7 +62,10 @@ rule all:
         expand("FASTQ/umiTrimmed_{sample}{read}.fastq.gz", sample = samples, read = reads),
         run_Trimming(trim),
         expand("FastQC/{sample}{read}_fastqc.html", sample = samples, read=reads),
-        expand("BWA_mapped/{sample}.bam", sample = samples),
+        expand("bwa_mapped/{sample}.bam", sample = samples),
+        expand("tagged_bam/{sample}.bam", sample = samples),
+        expand("meth_calls/{sample}_allC.bed.gz", sample = samples),
+        expand("meth_calls/{sample}.methCpG.bw", sample = samples)
 
 ### execute after workflow finished ############################################
 ################################################################################

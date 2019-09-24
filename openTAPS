@@ -68,7 +68,7 @@ def runAndCleanup(args, cmd):
         print("\n{}\n".format(cmd))
 
     # write log file
-    f = open(os.path.join(args.outdir, "scRIA.log"), "w")
+    f = open(os.path.join(args.outdir, "openTAPS.log"), "w")
     f.write(" ".join(sys.argv) + "\n\n")
     f.write(cmd + "\n\n")
 
