@@ -6,5 +6,7 @@ reads: ["_R1","_R2"]
 downsample:
 trim: True
 trimmerOptions: ""
-barcode_tsv: '/hpc/hub_oudenaarden/vbhardwaj/annotations/celseq2_barcodes.csv'
-bwa_index: '/hpc/hub_oudenaarden/group_references/ensembl/95/mus_musculus/annotations.gtf'
+barcode_tsv: '/path/to/taps_barcodes.tsv'
+bwa_index: '/hpc/hub_oudenaarden/vbhardwaj/annotations/hg38_gencode31_extra/BWAIndex/genome.fa'
+genome_fasta: '/hpc/hub_oudenaarden/vbhardwaj/annotations/hg38_gencode31_extra/genome_fasta/genome.fa'
+method: 'chic'
