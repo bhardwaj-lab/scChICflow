@@ -65,7 +65,9 @@ def meth_check(type=method):
         expand("meth_calls/{sample}.methCpG.bw", sample = samples)
         ]
     elif type == 'chic':
-        file_list = [expand("bwa_mapped/{sample}.bam.bai", sample = samples)]
+        file_list = [
+        expand("dedup_bam/{sample}.bam", sample = samples),
+        expand("dedup_bam/{sample}.bam.bai", sample = samples)]
     else:
         file_list = []
     return(file_list)
@@ -79,6 +81,7 @@ rule all:
         run_Trimming(trim),
         expand("FastQC/{sample}{read}_fastqc.html", sample = samples, read=reads),
         expand("bwa_mapped/{sample}.bam", sample = samples),
+        expand("bwa_mapped/{sample}.bam.bai", sample = samples)
         meth_check()
 
 
