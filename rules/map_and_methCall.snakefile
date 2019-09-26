@@ -37,12 +37,13 @@ rule taps_tagger:
     log:
         out = "logs/taps_tagger_{sample}.out",
         err = "logs/taps_tagger_{sample}.err"
-    threads: 10
+    threads: 1
     #conda: CONDA_scRIA_ENV
     shell:
         "tapsTagger.py -ref {input.genome} \
         -method {params.method} -bed {output.bed} \
-        -o {output.bam} -min_mq 10 {input.bam} > {log.out} 2> {log.err}"
+        -o {output.bam} -min_mq 10 {input.bam} \
+        > {log.out} 2> {log.err}"
 
 rule meth_bigwig:
     input:
