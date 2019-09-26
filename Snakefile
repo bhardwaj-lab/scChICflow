@@ -39,8 +39,9 @@ samples = get_sample_names(infiles,ext,reads)
 
 ### include modules of other snakefiles ########################################
 ################################################################################
-include: os.path.join(workflow.basedir, "rules", "fastq.snakefile")
-include: os.path.join(workflow.basedir, "rules", "map_and_methCall.snakefile")
+include: os.path.join(workflow.basedir, "rules", "fastq_map.snakefile")
+if method in ['chic-taps', 'nla-taps']:
+    include: os.path.join(workflow.basedir, "rules", "methCall.snakefile")
 
 ### conditional/optional rules #################################################
 ################################################################################
@@ -54,6 +55,17 @@ def run_Trimming(trim):
     else:
         return([])
 
+def meth_check(type=method):
+    if type in ['chic-taps', 'nla-taps']:
+        file_list = [
+        expand("tagged_bam/{sample}.bam", sample = samples),
+        expand("meth_calls/{sample}_allC.bed.gz", sample = samples),
+        expand("meth_calls/{sample}.methCpG.bw", sample = samples)
+        ]
+    else:
+        file_list = []
+    return(file_list)
+
 ### main rule ##################################################################
 ################################################################################
 localrules: FASTQ1, FASTQ2
@@ -63,9 +75,8 @@ rule all:
         run_Trimming(trim),
         expand("FastQC/{sample}{read}_fastqc.html", sample = samples, read=reads),
         expand("bwa_mapped/{sample}.bam", sample = samples),
-        expand("tagged_bam/{sample}.bam", sample = samples),
-        expand("meth_calls/{sample}_allC.bed.gz", sample = samples),
-        expand("meth_calls/{sample}.methCpG.bw", sample = samples)
+        meth_check()
+
 
 ### execute after workflow finished ############################################
 ################################################################################
