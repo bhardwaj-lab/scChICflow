@@ -18,12 +18,3 @@ rule index_dedup:
     output: "dedup_bam/{sample}.bam.bai"
     threads: 1
     shell: "samtools index {input}"
-
-
-
-"""
-cutadapt -j {threads} -e 0.1 -q 16 -O 3 --trim-n --minimum-length 20 \
--a AGATCGGAAGAGC -A AGATCGGAAGAGC -u 12 -u -4 -U -4 --nextseq-trim=16 \
---match-read-wildcards {params.opts} \
--o "{output.r1}" -p "{output.r2}" "{input.r1}" "{input.r2}" > {log.out} 2> {log.err}
-"""
