@@ -43,6 +43,8 @@ include: os.path.join(workflow.basedir, "rules", "fastq_map.snakefile")
 if method in ['chic-taps', 'nla-taps']:
     include: os.path.join(workflow.basedir, "rules", "methCall.snakefile")
 
+if method in ['chic-taps', 'chic']:
+    include: os.path.join(workflow.basedir, "rules", "dedup_peakcall.snakefile")
 ### conditional/optional rules #################################################
 ################################################################################
 def run_Trimming(trim):
@@ -62,6 +64,8 @@ def meth_check(type=method):
         expand("meth_calls/{sample}_allC.bed.gz", sample = samples),
         expand("meth_calls/{sample}.methCpG.bw", sample = samples)
         ]
+    elif type == 'chic':
+        file_list = [expand("bwa_mapped/{sample}.bam.bai", sample = samples)]
     else:
         file_list = []
     return(file_list)
