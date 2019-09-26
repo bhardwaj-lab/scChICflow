@@ -9,9 +9,10 @@ rule umi_dedup:
         err = "logs/umi_dedup_{sample}.err"
     threads: 1
     shell:
-        "umi_tools dedup --mapping-quality 10 --paired --unmapped-reads use \
+        "umi_tools dedup --mapping-quality 10 \
         --per-cell --umi-tag=RX --cell-tag=BC --extract-umi-method=tag \
         -I {input.bam} -L {log.out} > {output.bam} 2> {log.err}"
+# --paired --unmapped-reads use
 
 rule index_dedup:
     input: "dedup_bam/{sample}.bam"
