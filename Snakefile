@@ -45,6 +45,9 @@ if method in ['chic-taps', 'nla-taps']:
 
 if method in ['chic-taps', 'chic']:
     include: os.path.join(workflow.basedir, "rules", "dedup_peakcall.snakefile")
+
+include: os.path.join(workflow.basedir, "rules", "QC.snakefile")
+
 ### conditional/optional rules #################################################
 ################################################################################
 def run_Trimming(trim):
@@ -79,10 +82,11 @@ rule all:
     input:
         expand("FASTQ/umiTrimmed_{sample}{read}.fastq.gz", sample = samples, read = reads),
         run_Trimming(trim),
-        expand("FastQC/{sample}{read}_fastqc.html", sample = samples, read=reads),
+        expand("FASTQ/FastQC/{sample}{read}_fastqc.html", sample = samples, read=reads),
         expand("bwa_mapped/{sample}.bam", sample = samples),
         expand("bwa_mapped/{sample}.bam.bai", sample = samples),
-        meth_check()
+        meth_check(),
+        "QC/multiqc_report.html"
 
 
 ### execute after workflow finished ############################################

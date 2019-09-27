@@ -18,13 +18,17 @@ rule FastQC:
     input:
         "FASTQ/{sample}{read}.fastq.gz"
     output:
-        "FastQC/{sample}{read}_fastqc.html"
+        "FASTQ/FastQC/{sample}{read}_fastqc.html"
+    params:
+        outdir = "FASTQ/FastQC"
     log:
         out = "logs/FastQC.{sample}{read}.out",
         err = "logs/FastQC.{sample}{read}.err"
     threads: 2
     #conda: CONDA_SHARED_ENV
-    shell: "fastqc -o FastQC {input} > {log.out} 2> {log.err}"
+    shell:
+        "fastqc -o {params.outdir} {input} > {log.out} 2> {log.err} && \
+         ln -s $PWD/FASTQ/FastQC > QC/FastQC"
 
 if downsample:
     rule FASTQdownsample:
@@ -95,7 +99,9 @@ if trim:
             err = "logs/FastQC_trimmed.{sample}{read}.err"
         threads: 2
         #conda: CONDA_SHARED_ENV
-        shell: "fastqc -o {params.outdir} {input} > {log.out} 2> {log.err}"
+        shell:
+            "fastqc -o {params.outdir} {input} > {log.out} 2> {log.err} && \
+             ln -s $PWD/FASTQ_trimmed/FastQC > QC/FastQC_trimmed "
 
 
 
@@ -125,3 +131,19 @@ rule bwa_index:
     input: "bwa_mapped/{sample}.bam"
     output: "bwa_mapped/{sample}.bam.bai"
     shell: "samtools index {input}"
+
+rule flagstat_bwa:
+    input: "bwa_mapped/{sample}.bam"
+    output: "QC/flagstat_bwa_{sample}.txt"
+    threads: 1
+    shell: "samtools flagstat {input} > {output}"
+
+rule readfiltering_bwa:
+    input:
+        bam = "bwa_mapped/{sample}.bam",
+        blacklist = blacklist_bed
+    output: "QC/readfiltering_bwa_{sample}.txt"
+    threads: 10
+    shell:
+        "estimateReadFiltering -p {threads} --minMappingQuality 10 --samFlagInclude 64 \
+        -bl {input.blaklist} -b {input.bam} > {output}"
