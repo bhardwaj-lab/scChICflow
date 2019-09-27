@@ -69,26 +69,27 @@ rule umi_trimming:
 
 
 if trim:
-    rule fastp:
+    rule cutadapt:
         input:
             r1 = "FASTQ/umiTrimmed_{sample}"+reads[0]+".fastq.gz",
             r2 = "FASTQ/umiTrimmed_{sample}"+reads[1]+".fastq.gz"
         output:
             r1 = "FASTQ_trimmed/{sample}"+reads[0]+".fastq.gz",
-            r2 = "FASTQ_trimmed/{sample}"+reads[1]+".fastq.gz",
-            json = "QC/fastp/{sample}.fastp.json",
-            html = "QC/fastp/{sample}.fastp.html"
+            r2 = "FASTQ_trimmed/{sample}"+reads[1]+".fastq.gz"
         params:
             opts = str(trimmerOptions or '')
         log:
-            out = "logs/fastp.{sample}.out",
-            err = "logs/fastp.{sample}.err"
+            out = "logs/cutadapt.{sample}.out",
+            err = "logs/cutadapt.{sample}.err"
         threads: 8
         shell:
-            """
-            fastp -q 16 -l 20 -w {threads} -i {input.r1} -I {input.r2} -o {output.r1} \
-            -O {output.r2} -j {output.json} -h {output.html} {params.opts} > {log.out} 2> {log.err}
-            """
+            "cutadapt -j {threads} -e 0.1 -q 16 -O 3 --trim-n --minimum-length 20 \
+            -b TGGAATTCTCGGGTGCCAAGG -B TGGAATTCTCGGGTGCCAAGG \
+            -b ATCTCGTATGCCGTCTTCTGCTTG -B ATCTCGTATGCCGTCTTCTGCTTG \
+            -b GTTCAGAGTTCTACAGTCCGACGATC -B GTTCAGAGTTCTACAGTCCGACGATC \
+            --nextseq-trim=16 {params.opts} \
+            -o "{output.r1}" -p "{output.r2}" "{input.r1}" "{input.r2}" > {log.out} 2> {log.err}
+            "
 
     rule FastQC_trimmed:
         input:
