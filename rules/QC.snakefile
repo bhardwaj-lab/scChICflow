@@ -29,4 +29,4 @@ rule multiQC:
         err = "logs/multiqc.err"
     threads: 1
     shell:
-        "multiqc -o {params.outdir} > {log.out} 2> {log.err}"
+        "multiqc -o {params.outdir} {params.outdir} > {log.out} 2> {log.err}"
