@@ -76,8 +76,8 @@ if trim:
         output:
             r1 = "FASTQ_trimmed/{sample}"+reads[0]+".fastq.gz",
             r2 = "FASTQ_trimmed/{sample}"+reads[1]+".fastq.gz",
-            json = "FASTQ_trimmed/{sample}.fastp.json",
-            html = "FASTQ_trimmed/{sample}.fastp.html"
+            json = "QC/fastp/{sample}.fastp.json",
+            html = "QC/fastp/{sample}.fastp.html"
         params:
             opts = str(trimmerOptions or '')
         log:
