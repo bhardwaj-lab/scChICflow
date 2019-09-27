@@ -56,7 +56,7 @@ rule umi_trimming:
         r1 = "FASTQ/umiTrimmed_{sample}"+reads[0]+".fastq.gz",
         r2 = "FASTQ/umiTrimmed_{sample}"+reads[1]+".fastq.gz"
     params:
-        barcodes = barcode_tsv
+        barcodes = barcode_list
     log:
         out = "logs/umi_trimming_{sample}.out",
         err = "logs/umi_trimming_{sample}.err"
