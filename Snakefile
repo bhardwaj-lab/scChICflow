@@ -40,6 +40,7 @@ samples = get_sample_names(infiles,ext,reads)
 ### include modules of other snakefiles ########################################
 ################################################################################
 include: os.path.join(workflow.basedir, "rules", "fastq_map.snakefile")
+
 if method in ['chic-taps', 'nla-taps']:
     include: os.path.join(workflow.basedir, "rules", "methCall.snakefile")
 

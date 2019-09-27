@@ -1,7 +1,4 @@
 ## workflow parameters
-## FASTQ file extension (default: ".fastq.gz")
-ext: '.fastq.gz'
-## paired-end read name extension (default: ["_R1", "_R2"])
 reads: ["_R1","_R2"]
 downsample:
 trim: True

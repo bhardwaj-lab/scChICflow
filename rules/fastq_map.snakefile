@@ -88,8 +88,7 @@ if trim:
             -b ATCTCGTATGCCGTCTTCTGCTTG -B ATCTCGTATGCCGTCTTCTGCTTG \
             -b GTTCAGAGTTCTACAGTCCGACGATC -B GTTCAGAGTTCTACAGTCCGACGATC \
             --nextseq-trim=16 {params.opts} \
-            -o "{output.r1}" -p "{output.r2}" "{input.r1}" "{input.r2}" > {log.out} 2> {log.err}
-            "
+            -o {output.r1} -p {output.r2} {input.r1} {input.r2} > {log.out} 2> {log.err}"
 
     rule FastQC_trimmed:
         input:
