@@ -28,7 +28,7 @@ rule FastQC:
     #conda: CONDA_SHARED_ENV
     shell:
         "fastqc -o {params.outdir} {input} > {log.out} 2> {log.err} && \
-         ln -s $PWD/FASTQ/FastQC > QC/FastQC"
+         ln -s $PWD/FASTQ/FastQC QC/FastQC"
 
 if downsample:
     rule FASTQdownsample:
@@ -62,7 +62,10 @@ rule umi_trimming:
         err = "logs/umi_trimming_{sample}.err"
     threads: 2
     #conda: CONDA_SHARED_ENV
-    shell: "umi_tools extract --extract-method=string --bc-pattern=NNNCCCCCCCC --whitelist {params.barcodes} --filter-cell-barcode -I {input.r1} --read2-in {input.r2} -L {log.out} --read2-out {output.r2} | gzip - > {output.r1}"
+    shell:
+        "umi_tools extract --extract-method=string --bc-pattern=NNNCCCCCCCC \
+        --whitelist {params.barcodes} --filter-cell-barcode -I {input.r1} --read2-in {input.r2} \
+        -L {log.out} --read2-out {output.r2} | gzip - > {output.r1}"
 
 
 if trim:
@@ -101,7 +104,7 @@ if trim:
         #conda: CONDA_SHARED_ENV
         shell:
             "fastqc -o {params.outdir} {input} > {log.out} 2> {log.err} && \
-             ln -s $PWD/FASTQ_trimmed/FastQC > QC/FastQC_trimmed "
+             ln -s $PWD/FASTQ_trimmed/FastQC QC/FastQC_trimmed "
 
 
 
