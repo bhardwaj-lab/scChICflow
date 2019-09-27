@@ -146,4 +146,4 @@ rule readfiltering_bwa:
     threads: 10
     shell:
         "estimateReadFiltering -p {threads} --minMappingQuality 10 --samFlagInclude 64 \
-        -bl {input.blaklist} -b {input.bam} > {output}"
+        -bl {input.blacklist} -b {input.bam} > {output}"
