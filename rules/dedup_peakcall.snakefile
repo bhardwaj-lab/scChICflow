@@ -34,4 +34,4 @@ rule readfiltering_dedup:
     threads: 10
     shell:
         "estimateReadFiltering -p {threads} --minMappingQuality 10 \
-        -bl {input.blaklist} -b {input.bam} > {output}"
+        -bl {input.blacklist} -b {input.bam} > {output}"
