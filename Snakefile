@@ -71,7 +71,11 @@ def meth_check(type=method):
     elif type == 'chic':
         file_list = [
         expand("dedup_bam/{sample}.bam", sample = samples),
-        expand("dedup_bam/{sample}.bam.bai", sample = samples)]
+        expand("dedup_bam/{sample}.bam.bai", sample = samples),
+        expand("coverage/{sample}_dedup.cpm.bw", sample = samples),
+        expand("homer_peaks/{sample}/tagInfo.txt", sample = samples),
+        expand("homer_peaks/{sample}_peaks.bed", sample = samples)
+        ]
     else:
         file_list = []
     return(file_list)
