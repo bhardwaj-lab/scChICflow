@@ -9,7 +9,8 @@ rule taps_tagger:
         bai = "tagged_bam/{sample}.bam.bai",
         bed = "meth_calls/{sample}_allC.bed"
     params:
-        method = lambda wildcards: 'chic' if method == 'chic-taps' else 'nla'
+        method = lambda wildcards: 'chic' if method == 'chic-taps' else 'nla',
+        min_mq = min_mapq
     log:
         out = "logs/taps_tagger_{sample}.out",
         err = "logs/taps_tagger_{sample}.err"
@@ -18,7 +19,7 @@ rule taps_tagger:
     shell:
         "tapsTagger.py -ref {input.genome} \
         -method {params.method} -bed {output.bed} \
-        -o {output.bam} -min_mq 10 {input.bam} \
+        -o {output.bam} -min_mq {params.min_mq} {input.bam} \
         > {log.out} 2> {log.err}"
 
 rule meth_bigwig:
