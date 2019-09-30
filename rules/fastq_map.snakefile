@@ -144,6 +144,7 @@ rule flagstat_bwa:
 rule readfiltering_bwa:
     input:
         bam = "bwa_mapped/{sample}.bam",
+        bai = "bwa_mapped/{sample}.bam.bai",
         blacklist = blacklist_bed
     output: "QC/readfiltering_bwa_{sample}.txt"
     params:
