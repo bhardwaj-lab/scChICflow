@@ -8,7 +8,7 @@ trim: True
 # Additional optional passed to trimmer (default assumes nextSeq data with Illumina smallRNA barcodes)
 trimmerOptions: ""
 # List of cell barcodes
-barcode_list: '/path/to/taps_barcodes.tsv'
+barcode_list: '/hpc/hub_oudenaarden/group_references/cell_barcodes/maya_384NLA.bc'
 # path to BWA index (basename)
 bwa_index: '/hpc/hub_oudenaarden/vbhardwaj/annotations/hg38_gencode31_extra/BWAIndex/genome.fa'
 # Path to genome fasta file
