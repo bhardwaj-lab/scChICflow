@@ -48,4 +48,6 @@ conda activate taps
 
 here **j** is the number of parallel jobs you want to run, **-cl** means submit to cluster (default is to run locally)
 
-After running the pipeline, **LOG** file are stored in the **<output>/log/** directory and the workflow top-level log is in openTAPS.log file.
+### Notes
+  - After running the pipeline, **LOG** file are stored in the **<output>/log/** directory and the workflow top-level log is in openTAPS.log file.
+  - Currently the -o option is not very flexible and and pipeline works only when it's executed in the output directory.
