@@ -28,7 +28,8 @@ rule FastQC:
     #conda: CONDA_SHARED_ENV
     shell:
         "fastqc -o {params.outdir} {input} > {log.out} 2> {log.err} && \
-         ln -s $PWD/FASTQ/FastQC QC/FastQC"
+         mkdir -p QC && \
+         ln -s -r {params.outdir} QC/FastQC"
 
 if downsample:
     rule FASTQdownsample:
@@ -104,7 +105,7 @@ if trim:
         #conda: CONDA_SHARED_ENV
         shell:
             "fastqc -o {params.outdir} {input} > {log.out} 2> {log.err} && \
-             ln -s $PWD/FASTQ_trimmed/FastQC QC/FastQC_trimmed "
+             ln -s -r FASTQ_trimmed/FastQC QC/FastQC_trimmed "
 
 
 

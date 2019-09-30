@@ -82,5 +82,5 @@ rule homer_findpeaks:
         -L 2 -F 0 -C 0 > {output.txt} > {log} 2>&1 && \
         awk 'OFS="\\t" {{if ($0 !~ "#") {{print $2, $3, $4, $1, $10, $5 }} }}' \
         {output.txt} > {output.bed} && \
-        ln -s $PWD/{params.dir} QC/homer_peaks_{params.sample}
+        ln -s -r {params.dir} QC/homer_peaks_{params.sample}
         """

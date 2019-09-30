@@ -4,7 +4,7 @@ ext: '.fastq.gz'
 # The suffix added to reads
 reads: ["_R1","_R2"]
 # No. of reads to downsample (leave empty for no downsampling)
-downsample:
+downsample: 100
 # Trim the reads?
 trim: True
 # Additional optional passed to trimmer (default assumes nextSeq data with Illumina smallRNA barcodes)
