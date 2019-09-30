@@ -1,4 +1,6 @@
 ## workflow parameters
+# file name extension
+ext: ''.fastq.gz'
 # The suffix added to reads
 reads: ["_R1","_R2"]
 # No. of reads to downsample (leave empty for no downsampling)
