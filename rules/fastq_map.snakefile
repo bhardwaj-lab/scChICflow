@@ -146,7 +146,9 @@ rule readfiltering_bwa:
         bam = "bwa_mapped/{sample}.bam",
         blacklist = blacklist_bed
     output: "QC/readfiltering_bwa_{sample}.txt"
+    params:
+        mapq = min_mapq
     threads: 10
     shell:
-        "estimateReadFiltering -p {threads} --minMappingQuality 10 --samFlagInclude 64 \
+        "estimateReadFiltering -p {threads} --minMappingQuality {params.mapq} --samFlagInclude 64 \
         -bl {input.blacklist} -b {input.bam} > {output}"

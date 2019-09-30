@@ -4,12 +4,14 @@ rule umi_dedup:
         idx = "bwa_mapped/{sample}.bam.bai"
     output:
         bam = "dedup_bam/{sample}.bam"
+    params:
+        mapq = min_mapq
     log:
         out = "logs/umi_dedup_{sample}.out",
         err = "logs/umi_dedup_{sample}.err"
     threads: 1
     shell:
-        "umi_tools dedup --mapping-quality 10 \
+        "umi_tools dedup --mapping-quality {params.mapq} \
         --per-cell --umi-tag=RX --cell-tag=BC --extract-umi-method=tag \
         -I {input.bam} -L {log.out} > {output.bam} 2> {log.err}"
 # --paired --unmapped-reads use
@@ -32,10 +34,12 @@ rule readfiltering_dedup:
         bai = "dedup_bam/{sample}.bam.bai",
         blacklist = blacklist_bed
     output: "QC/readfiltering_dedup_{sample}.txt"
+    params:
+        mapq = min_mapq
     log: "logs/readfiltering_dedup_{sample}.out",
     threads: 10
     shell:
-        "estimateReadFiltering -p {threads} --minMappingQuality 10 \
+        "estimateReadFiltering -p {threads} --minMappingQuality {params.mapq} \
         -bl {input.blacklist} -b {input.bam} > {output} 2> {log}"
 
 rule bamCoverage_dedup:
