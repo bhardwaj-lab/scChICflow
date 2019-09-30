@@ -9,7 +9,7 @@ rule taps_tagger:
         bai = "tagged_bam/{sample}.bam.bai",
         bed = "meth_calls/{sample}_allC.bed"
     params:
-        method = method
+        method = lambda wildcards: 'chic' if method == 'chic-taps' else 'nla'
     log:
         out = "logs/taps_tagger_{sample}.out",
         err = "logs/taps_tagger_{sample}.err"

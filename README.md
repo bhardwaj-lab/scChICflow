@@ -30,7 +30,7 @@ The workflow needs
 1) path to the (indexed) genome fasta file
 2) path to BWA index (base)
 3) path to taps cell barcodes
-4) Name of "method", ('chic', for ChIC-TAPS, 'nla' for 'NLAIII-TAPS')
+4) Name of "method", ('chic', 'chic-taps' or 'nla-taps')
 
 Copy the config.yaml from the folder to your output folder (where you intend to run the pipeline) and replace the information with your relevant information.
 

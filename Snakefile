@@ -62,20 +62,21 @@ def run_Trimming(trim):
         return([])
 
 def meth_check(type=method):
+    file_list = []
     if type in ['chic-taps', 'nla-taps']:
-        file_list = [
+        file_list.append([
         expand("tagged_bam/{sample}.bam", sample = samples),
         expand("meth_calls/{sample}_allC.bed.gz", sample = samples),
         expand("meth_calls/{sample}.methCpG.bw", sample = samples)
-        ]
-    elif type == 'chic':
-        file_list = [
+        ])
+    if type in ['chic', 'chic-taps']:
+        file_list.append([
         expand("dedup_bam/{sample}.bam", sample = samples),
         expand("dedup_bam/{sample}.bam.bai", sample = samples),
         expand("coverage/{sample}_dedup.cpm.bw", sample = samples),
         expand("homer_peaks/{sample}/tagInfo.txt", sample = samples),
         expand("homer_peaks/{sample}_peaks.bed", sample = samples)
-        ]
+        ])
     else:
         file_list = []
     return(file_list)
