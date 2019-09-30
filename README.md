@@ -4,6 +4,11 @@ Workflow for single-cell TAPS analysis
 
 **Author: @vivekbhr**
 
+## DAG (Directed Acyclic Graph) of the Workflow
+
+![DAG](./dag.png)
+
+
 ## How to run
 
 1. Clone the repo
