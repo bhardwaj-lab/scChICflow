@@ -10,21 +10,23 @@ rule taps_tagger:
         bed = "meth_calls/{sample}_allC.bed"
     params:
         method = lambda wildcards: 'chic' if method == 'chic-taps' else 'nla',
-        min_mq = min_mapq
+        min_mq = min_mapq,
+        cluster = '--cluster'
     log:
         out = "logs/taps_tagger_{sample}.out",
         err = "logs/taps_tagger_{sample}.err"
     threads: 1
     #conda: CONDA_scRIA_ENV
     shell:
-        "tapsTagger.py -ref {input.genome} \
+        "tapsTagger.py {params.cluster} -ref {input.genome} \
         -method {params.method} -bed {output.bed} \
         -o {output.bam} -min_mq {params.min_mq} {input.bam} \
         > {log.out} 2> {log.err}"
 
 rule meth_bigwig:
     input:
-        bed = "meth_calls/{sample}_allC.bed"
+        bed = "meth_calls/{sample}_allC.bed",
+        bai = "meth_calls/{sample}.bam.bai"
     output:
         bw = "meth_calls/{sample}.methCpG.bw",
         gz = "meth_calls/{sample}_allC.bed.gz"
