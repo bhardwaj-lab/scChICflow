@@ -18,18 +18,16 @@ rule FastQC:
     input:
         "FASTQ/{sample}{read}.fastq.gz"
     output:
-        "FASTQ/FastQC/{sample}{read}_fastqc.html"
+        "QC/FastQC/{sample}{read}_fastqc.html"
     params:
-        outdir = "FASTQ/FastQC"
+        outdir = "QC/FastQC"
     log:
         out = "logs/FastQC.{sample}{read}.out",
         err = "logs/FastQC.{sample}{read}.err"
     threads: 2
     #conda: CONDA_SHARED_ENV
     shell:
-        "fastqc -o {params.outdir} {input} > {log.out} 2> {log.err} && \
-         mkdir -p QC && \
-         ln -s -r {params.outdir} QC/FastQC"
+        "fastqc -o {params.outdir} {input} > {log.out} 2> {log.err} "
 
 if downsample:
     rule FASTQdownsample:
@@ -95,17 +93,16 @@ if trim:
         input:
             "FASTQ_trimmed/{sample}{read}.fastq.gz"
         output:
-            "FASTQ_trimmed/FastQC/{sample}{read}_fastqc.html"
+            "QC/FastQC_trimmed/{sample}{read}_fastqc.html"
         params:
-            outdir = "FASTQ_trimmed/FastQC"
+            outdir = "QC/FastQC_trimmed"
         log:
             out = "logs/FastQC_trimmed.{sample}{read}.out",
             err = "logs/FastQC_trimmed.{sample}{read}.err"
         threads: 2
         #conda: CONDA_SHARED_ENV
         shell:
-            "fastqc -o {params.outdir} {input} > {log.out} 2> {log.err} && \
-             ln -s -r FASTQ_trimmed/FastQC QC/FastQC_trimmed "
+            "fastqc -o {params.outdir} {input} > {log.out} 2> {log.err}"
 
 
 

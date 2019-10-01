@@ -55,7 +55,7 @@ def run_Trimming(trim):
     if trim:
         file_list = [
         expand("FASTQ_trimmed/{sample}{read}.fastq.gz", sample = samples, read = reads),
-        expand("FASTQ_trimmed/FastQC/{sample}{read}_fastqc.html", sample = samples, read = reads)
+        expand("QC/FastQC_trimmed/{sample}{read}_fastqc.html", sample = samples, read = reads)
         ]
         return(file_list)
     else:
@@ -88,7 +88,7 @@ rule all:
     input:
         expand("FASTQ/umiTrimmed_{sample}{read}.fastq.gz", sample = samples, read = reads),
         run_Trimming(trim),
-        expand("FASTQ/FastQC/{sample}{read}_fastqc.html", sample = samples, read=reads),
+        expand("QC/FastQC/{sample}{read}_fastqc.html", sample = samples, read=reads),
         expand("bwa_mapped/{sample}.bam", sample = samples),
         expand("bwa_mapped/{sample}.bam.bai", sample = samples),
         meth_check(),

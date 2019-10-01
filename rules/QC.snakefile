@@ -1,11 +1,11 @@
 def get_multiqc_input():
     file = [
-        expand("FASTQ/FastQC/{sample}{read}_fastqc.html", sample = samples, read=reads),
+        expand("QC/FastQC/{sample}{read}_fastqc.html", sample = samples, read=reads),
         expand("QC/flagstat_bwa_{sample}.txt", sample = samples),
         expand("QC/readfiltering_bwa_{sample}.txt", sample = samples)
         ]
     if trim:
-        file.append(expand("FASTQ_trimmed/FastQC/{sample}{read}_fastqc.html", sample = samples, read = reads))
+        file.append(expand("QC/FastQC_trimmed/{sample}{read}_fastqc.html", sample = samples, read = reads))
     if method in ['chic', 'chic-taps']:
         file.append([
             expand("QC/flagstat_dedup_{sample}.txt", sample = samples),
