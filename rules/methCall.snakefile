@@ -11,7 +11,7 @@ rule taps_tagger:
     params:
         method = lambda wildcards: 'chic' if method == 'chic-taps' else 'nla',
         min_mq = min_mapq,
-        cluster = '--cluster'
+        cluster = '--cluster' if cluster else ''
     log:
         out = "logs/taps_tagger_{sample}.out",
         err = "logs/taps_tagger_{sample}.err"

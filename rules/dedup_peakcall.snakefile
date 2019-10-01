@@ -69,7 +69,7 @@ rule maketags_dedup:
 rule homer_findpeaks:
     input: "homer_peaks/{sample}/tagInfo.txt"
     output:
-        txt = temp("homer_peaks/{sample}/peaks.txt"),
+        txt = "homer_peaks/{sample}/peaks.txt",
         bed = "homer_peaks/{sample}_peaks.bed"
     params:
         dir = "homer_peaks/{sample}",
@@ -78,9 +78,9 @@ rule homer_findpeaks:
     threads: 1
     shell:
         """
-        findPeaks {input} -style factor -center -fdr 0.05 -tagThreshold 2 \
-        -L 2 -F 0 -C 0 > {output.txt} > {log} 2>&1 && \
+        findPeaks {params.dir} -style factor -center -fdr 0.05 -tagThreshold 2 \
+        -L 2 -F 0 -C 0 > {output.txt} 2> {log} && \
         awk 'OFS="\\t" {{if ($0 !~ "#") {{print $2, $3, $4, $1, $10, $5 }} }}' \
         {output.txt} > {output.bed} && \
-        ln -s -r {params.dir} QC/homer_peaks_{params.sample}
+        ln -sf -r {params.dir} QC/homer_peaks_{params.sample}
         """
