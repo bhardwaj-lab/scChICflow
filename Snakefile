@@ -78,8 +78,6 @@ def meth_check(type=method):
         expand("homer_peaks/{sample}_peaks.bed", sample = samples),
         expand("counts/{sample}_peaks.csv", sample = samples)
         ])
-    else:
-        file_list = []
     return(file_list)
 
 ### main rule ##################################################################
