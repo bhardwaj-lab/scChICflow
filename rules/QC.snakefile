@@ -10,7 +10,7 @@ def get_multiqc_input():
         file.append([
             expand("QC/flagstat_dedup_{sample}.txt", sample = samples),
             expand("QC/readfiltering_dedup_{sample}.txt", sample = samples),
-            expand("homer_peaks/{sample}_peaks.bed", sample = samples)
+            expand("QC/homer_peaks_{sample}", sample = samples)
             ])
     return(file)
 

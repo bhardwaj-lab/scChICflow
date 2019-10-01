@@ -20,4 +20,4 @@ blacklist_bed: "/hpc/hub_oudenaarden/vbhardwaj/annotations/blacklists/hg38-black
 # minimum mapq threshold to extract signal from
 min_mapq: 10
 # which protocol? (options: 'nla-taps', 'chic-taps', 'chic')
-method: 'chic'
+method: 'chic-taps'

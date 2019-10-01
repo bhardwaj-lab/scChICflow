@@ -67,7 +67,8 @@ def meth_check(type=method):
         file_list.extend([
         expand("tagged_bam/{sample}.bam", sample = samples),
         expand("meth_calls/{sample}_allC.bed.gz", sample = samples),
-        expand("meth_calls/{sample}.methCpG.bw", sample = samples)
+        expand("meth_calls/{sample}.methCpG.bw", sample = samples),
+        expand("counts/{sample}_peaks.csv", sample = samples)
         ])
     if type in ['chic', 'chic-taps']:
         file_list.extend([
