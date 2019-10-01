@@ -26,7 +26,7 @@ rule taps_tagger:
 rule meth_bigwig:
     input:
         bed = "meth_calls/{sample}_allC.bed",
-        bai = "meth_calls/{sample}.bam.bai"
+        bai = "tagged_bam/{sample}.bam.bai"
     output:
         bw = "meth_calls/{sample}.methCpG.bw",
         gz = "meth_calls/{sample}_allC.bed.gz"
