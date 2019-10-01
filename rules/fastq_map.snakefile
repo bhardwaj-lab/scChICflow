@@ -82,7 +82,7 @@ if trim:
             err = "logs/cutadapt.{sample}.err"
         threads: 8
         shell:
-            "cutadapt -j {threads} -e 0.1 -q 16 -O 3 --trim-n --minimum-length 20 \
+            "cutadapt -j {threads} -e 0.1 -O 3 \
             -b TGGAATTCTCGGGTGCCAAGG -B TGGAATTCTCGGGTGCCAAGG \
             -b ATCTCGTATGCCGTCTTCTGCTTG -B ATCTCGTATGCCGTCTTCTGCTTG \
             -b GTTCAGAGTTCTACAGTCCGACGATC -B GTTCAGAGTTCTACAGTCCGACGATC \

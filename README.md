@@ -43,11 +43,18 @@ This should only take 3-4 minutes. Copy the test fastq files provided with the r
 
 ```
 conda activate taps
+## for outsiders:
 <openTAPS_folder>/openTAPS -i <testdata_folder> -o <output_folder> -c <your_config.yaml> -j <jobs> -cl
+## for van Oudenaarden group:
+mkdir testresults && cd testresults
+.././openTAPS -i ../testdata -o . -c ../config.yaml -j 10 -cl
 ```
+
 
 here **j** is the number of parallel jobs you want to run, **-cl** means submit to cluster (default is to run locally)
 
 ### Notes
   - After running the pipeline, **LOG** file are stored in the **<output>/log/** directory and the workflow top-level log is in openTAPS.log file.
   - Currently the -o option is not very flexible and and pipeline works only when it's executed in the output directory.
+  - cluster configuration, such as memory and cluster submission command are placed in `cluster_config.yaml`, and can be modified to suite the users internal infrastructure.
+  

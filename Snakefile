@@ -99,6 +99,6 @@ rule all:
 ################################################################################
 onsuccess:
     if "verbose" in config and config["verbose"]:
-        print("\n--- openTAPS workflow finished successfully! --------------------------------\n")
+        print("\n--- openTAPS workflow finished successfully! ------------------\n")
 onerror:
-    print("\n !!! ERROR in openTAPS workflow! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n")
+    print("\n !!!! ERROR in openTAPS workflow! !!!!\n")
