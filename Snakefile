@@ -80,6 +80,7 @@ def meth_check(type=method):
         ])
     else:
         file_list = []
+        print(file_list)
     return(file_list)
 
 ### main rule ##################################################################
