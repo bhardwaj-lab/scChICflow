@@ -78,7 +78,7 @@ rule homer_findpeaks:
     threads: 1
     shell:
         """
-        findPeaks homer_test -style factor -center -fdr 0.05 -tagThreshold 2 \
+        findPeaks {input} -style factor -center -fdr 0.05 -tagThreshold 2 \
         -L 2 -F 0 -C 0 > {output.txt} > {log} 2>&1 && \
         awk 'OFS="\\t" {{if ($0 !~ "#") {{print $2, $3, $4, $1, $10, $5 }} }}' \
         {output.txt} > {output.bed} && \
