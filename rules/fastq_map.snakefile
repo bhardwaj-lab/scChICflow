@@ -107,7 +107,6 @@ if trim:
 
 
 ## MAP
-
 rule bwa_map:
     input:
         r1 = "FASTQ_trimmed/{sample}"+reads[0]+".fastq.gz" if trim else "FASTQ/umiTrimmed_{sample}"+reads[0]+".fastq.gz",
