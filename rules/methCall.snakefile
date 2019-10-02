@@ -1,7 +1,3 @@
-def get_ctxt(c):
-    s = c.split(",")
-    return("".join(s))
-
 rule taps_tagger:
     input:
         bam = "bwa_mapped/{sample}.bam",
@@ -10,7 +6,7 @@ rule taps_tagger:
     output:
         bam = "tagged_bam/{sample}.bam",
         bai = "tagged_bam/{sample}.bam.bai",
-        bed = lambda wildcards: "meth_calls/{sample}_allC.bed" if bedContext is None else "meth_calls/{sample}_"+get_ctxt(bedContext)+".bed"
+        bed = lambda wildcards: "meth_calls/{sample}_methylation.bed"
     params:
         method = lambda wildcards: 'chic' if method == 'chic-taps' else 'nla',
         min_mq = min_mapq,
@@ -29,12 +25,12 @@ rule taps_tagger:
 
 rule meth_bigwig:
     input:
-        bed = "meth_calls/{sample}_allC.bed",
+        bed = "meth_calls/{sample}_methylation.bed",
         bam = "tagged_bam/{sample}.bam",
         bai = "tagged_bam/{sample}.bam.bai"
     output:
         bw = "meth_calls/{sample}.methCpG.bw",
-        gz = "meth_calls/{sample}_allC.bed.gz"
+        gz = "meth_calls/{sample}_methylation.bed.gz"
     params:
         sample = '{sample}',
         genome = genome_fasta
