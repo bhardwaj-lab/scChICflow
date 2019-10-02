@@ -6,7 +6,7 @@ reads: ["_R1","_R2"]
 # No. of reads to downsample (leave empty for no downsampling)
 downsample:
 # Trim the reads?
-trim: False
+trim: True
 # Additional optional passed to trimmer (default assumes nextSeq data with Illumina smallRNA barcodes)
 trimmerOptions: "-q 1,16 --trim-n --minimum-length 20"
 # List of cell barcodes
