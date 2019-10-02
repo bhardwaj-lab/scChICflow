@@ -8,10 +8,10 @@ rule taps_tagger:
         bai = "tagged_bam/{sample}.bam.bai",
         bed = lambda wildcards: "meth_calls/{sample}_methylation.bed"
     params:
-        method = lambda wildcards: 'chic' if method == 'chic-taps' else 'nla',
+        method = 'chic' if method == 'chic-taps' else 'nla',
         min_mq = min_mapq,
-        cluster = lambda wildcards: '--cluster' if cluster else '',
-        context = lambda wildcards: '-context '+bedContext if bedContext else ''
+        cluster = '--cluster' if cluster else '',
+        context = '-context '+bedContext if bedContext else ''
     log:
         out = "logs/taps_tagger_{sample}.out",
         err = "logs/taps_tagger_{sample}.err"
