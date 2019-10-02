@@ -6,7 +6,7 @@ rule taps_tagger:
     output:
         bam = "tagged_bam/{sample}.bam",
         bai = "tagged_bam/{sample}.bam.bai",
-        bed = lambda wildcards: "meth_calls/{sample}_methylation.bed"
+        bed = "meth_calls/{sample}_methylation.bed"
     params:
         method = 'chic' if method == 'chic-taps' else 'nla',
         min_mq = min_mapq,
