@@ -1,3 +1,6 @@
+def get_ctxt(c):
+    s = c.split(",")
+    return("".join(s))
 
 rule taps_tagger:
     input:
@@ -7,25 +10,27 @@ rule taps_tagger:
     output:
         bam = "tagged_bam/{sample}.bam",
         bai = "tagged_bam/{sample}.bam.bai",
-        bed = "meth_calls/{sample}_allC.bed"
+        bed = lambda wildcards: "meth_calls/{sample}_allC.bed" if bedContext is None else "meth_calls/{sample}_"+get_ctxt(bedContext)+".bed"
     params:
         method = lambda wildcards: 'chic' if method == 'chic-taps' else 'nla',
         min_mq = min_mapq,
-        cluster = '--cluster' if cluster else ''
+        cluster = '--cluster' if cluster else '',
+        context = '-context '+bedContext if bedContext else ''
     log:
         out = "logs/taps_tagger_{sample}.out",
         err = "logs/taps_tagger_{sample}.err"
     threads: 1
     #conda: CONDA_scRIA_ENV
     shell:
-        "tapsTagger.py {params.cluster} -ref {input.genome} \
-        -method {params.method} -bed {output.bed} \
+        "tapsTagger.py {params.cluster} {params.context} \
+        -ref {input.genome} -method {params.method} -bed {output.bed} \
         -o {output.bam} -min_mq {params.min_mq} {input.bam} \
         > {log.out} 2> {log.err}"
 
 rule meth_bigwig:
     input:
         bed = "meth_calls/{sample}_allC.bed",
+        bam = "tagged_bam/{sample}.bam",
         bai = "tagged_bam/{sample}.bam.bai"
     output:
         bw = "meth_calls/{sample}.methCpG.bw",
@@ -47,3 +52,17 @@ rule meth_bigwig:
         gzip {input.bed} &&
         rm {params.sample}.tmp.bed chrom_sizes.txt
         """
+
+rule meth_bincounts:
+    input:
+        bed = "tagged_bam/{sample}.bam",
+        bai = "tagged_bam/{sample}.bam.bai"
+    output:
+        csv = "meth_calls/{sample}_CpG_binCounts.csv"
+    params:
+        binsize = methCountsBinSize
+    log: "logs/meth_bincounts_{sample}.log"
+    threads: 1
+    shell:
+        "bamToCountTable.py -sampleTags SM -featureTags sZ -byValue sZ \
+        -joinedFeatureTags reference_name -bin {params.binsize} -o {output.csv} {input.bam} > {log} 2>&1"

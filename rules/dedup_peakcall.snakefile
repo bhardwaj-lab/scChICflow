@@ -88,13 +88,13 @@ rule homer_cleanup:
     input: "homer_peaks/{sample}_peaks.bed"
     output: directory("QC/homer_peaks_{sample}")
     params:
-        dir = "homer_peaks/{sample}",
-        sample = "{sample}"
+        dir = "homer_peaks/{sample}"
+#        sample = "{sample}"
     threads: 1
     shell:
         """
         rm {params.dir}/*.tags.tsv && \
-        ln -sf -r {params.dir} QC/homer_peaks_{params.sample}
+        ln -sf -r {params.dir} {output}
         """
 
 if method == 'chic-taps':

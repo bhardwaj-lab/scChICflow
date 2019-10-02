@@ -67,7 +67,8 @@ def meth_check(type=method):
         file_list.extend([
         expand("tagged_bam/{sample}.bam", sample = samples),
         expand("meth_calls/{sample}_allC.bed.gz", sample = samples),
-        expand("meth_calls/{sample}.methCpG.bw", sample = samples)
+        expand("meth_calls/{sample}.methCpG.bw", sample = samples),
+        expand("meth_calls/{sample}_CpG_binCounts.csv", sample = samples)
         ])
     if type in ['chic', 'chic-taps']:
         file_list.extend([
@@ -75,9 +76,10 @@ def meth_check(type=method):
         expand("dedup_bam/{sample}.bam.bai", sample = samples),
         expand("coverage/{sample}_dedup.cpm.bw", sample = samples),
         expand("homer_peaks/{sample}/tagInfo.txt", sample = samples),
-        expand("homer_peaks/{sample}_peaks.bed", sample = samples),
-        expand("counts/{sample}_peaks.csv", sample = samples)
+        expand("homer_peaks/{sample}_peaks.bed", sample = samples)
         ])
+    if type == 'chic-taps':
+        file_list.extend([expand("counts/{sample}_peaks.csv", sample = samples)])
     return(file_list)
 
 ### main rule ##################################################################
