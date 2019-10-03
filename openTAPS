@@ -60,8 +60,8 @@ def commonYAMLandLogs(baseDir, args, callingScript):
                           os.path.join(baseDir, "cluster_config.yaml"),
                           "--cluster", "'" + cluster_config["cluster_cmd"], "'"]
         ## always --use-conda on cluster
-        snakemake_cmd += "--use-conda"
-        
+        snakemake_cmd += ["--use-conda"]
+
     return " ".join(snakemake_cmd)
 
 def runAndCleanup(args, cmd):
