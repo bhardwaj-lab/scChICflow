@@ -50,7 +50,8 @@ if method in ['chic-taps', 'nla-taps']:
     include: os.path.join(workflow.basedir, "rules", "methCall.snakefile")
 
 if method in ['chic-taps', 'chic']:
-    include: os.path.join(workflow.basedir, "rules", "dedup_peakcall.snakefile")
+    include: os.path.join(workflow.basedir, "rules", "dedup_and_qc.snakefile")
+    include: os.path.join(workflow.basedir, "rules", "peakcall.snakefile")
 
 include: os.path.join(workflow.basedir, "rules", "QC.snakefile")
 
@@ -73,16 +74,25 @@ def meth_check(type=method):
         expand("tagged_bam/{sample}.bam", sample = samples),
         expand("meth_calls/{sample}_methylation.bed.gz", sample = samples),
         expand("meth_calls/{sample}.methCpG.bw", sample = samples),
-        expand("meth_calls/{sample}_CpG_binCounts.csv", sample = samples)
+        expand("meth_counts/{sample}_CpG_binCounts.csv", sample = samples)
         ])
+        if len(samples) > 1:
+            file_list.extend(["QC/bwSummary_methCpG_10kBins.npz",
+                            "QC/cor-spearman_10kBins.png"])
     if type in ['chic', 'chic-taps']:
         file_list.extend([
         expand("dedup_bam/{sample}.bam", sample = samples),
         expand("dedup_bam/{sample}.bam.bai", sample = samples),
         expand("coverage/{sample}_dedup.cpm.bw", sample = samples),
+        "QC/featureEnrichment.png",
+        "QC/featureEnrichment_biotype.png",
         expand("homer_peaks/{sample}/tagInfo.txt", sample = samples),
         expand("homer_peaks/{sample}_peaks.bed", sample = samples)
         ])
+        if len(samples) > 1:
+            file_list.extend(["QC/bwSummary_10kBins.npz",
+                            "QC/cor-spearman_10kBins.png"])
+
     if type == 'chic-taps':
         file_list.extend([expand("counts/{sample}_peaks.csv", sample = samples)])
     return(file_list)

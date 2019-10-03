@@ -55,7 +55,7 @@ rule meth_bincounts:
         bam = "tagged_bam/{sample}.bam",
         bai = "tagged_bam/{sample}.bam.bai"
     output:
-        csv = "meth_calls/{sample}_CpG_binCounts.csv"
+        csv = "meth_counts/{sample}_CpG_binCounts.csv"
     params:
         binsize = methCountsBinSize
     log: "logs/meth_bincounts_{sample}.log"
@@ -64,3 +64,81 @@ rule meth_bincounts:
     shell:
         "bamToCountTable.py -sampleTags SM -featureTags sZ -byValue sZ \
         -joinedFeatureTags reference_name -bin {params.binsize} -o {output.csv} {input.bam} > {log} 2>&1"
+
+rule bwSummary_meth:
+    input:
+        bw = expand("meth_calls/{sample}.methCpG.bw", sample = samples),
+        bl = blacklist_bed
+    output: "QC/bwSummary_methCpG_10kBins.npz"
+    log: "logs/bwSummary_methCpG.log"
+    threads: 8
+    conda: CONDA_SHARED_ENV
+    shell:
+        "multiBigwigSummary bins -p {threads} -bl {input.bl} \
+        --smartLabels -b {input.bw} -o {output}  > {log} 2>&1"
+
+rule plotCorrelation_meth:
+    input: "QC/bwSummary_methCpG_10kBins.npz"
+    output: "QC/cor-spearman_methCpG_10kBins.png"
+    log: "logs/plotCorrelation_CpG.log"
+    threads: 1
+    conda: CONDA_SHARED_ENV
+    shell:
+        "plotCorrelation -p heatmap -c spearman \
+        --skipZeros --removeOutliers \
+        --plotNumbers -in {input} -o {output} > {log} 2>&1"
+
+## ----------------------------- QC data per cell for all samples --------------------------- ##
+rule fragsPerCell:
+    input:
+        bam = "tagged_bam/{sample}.bam",
+        bai = "tagged_bam/{sample}.bam.bai"
+    output:
+        csv = "scQC/fragsPerCell/{sample}.csv"
+    params:
+        binsize = methCountsBinSize
+    log: "logs/fragsPerCell_{sample}.log"
+    threads: 1
+    conda: CONDA_SHARED_ENV
+    shell:
+        "bamToCountTable.py --dedup -sampleTags SM -featureTags RF \
+        -o {output.csv} {input.bam} > {log} 2>&1"
+
+rule methCountsPerCell:
+    input:
+        bam = "tagged_bam/{sample}.bam",
+        bai = "tagged_bam/{sample}.bam.bai"
+    output:
+        csv = "scQC/methCountsPerCell/{sample}_allMeth.csv"
+    log: "logs/methCountsPerCell_{sample}.log"
+    threads: 1
+    conda: CONDA_SHARED_ENV
+    shell:
+        "bamToCountTable.py --dedup -sampleTags SM -featureTags MC \
+        -o {output.csv} {input.bam} > {log} 2>&1"
+
+rule CpGmethCountsPerCell:
+    input:
+        bam = "tagged_bam/{sample}.bam",
+        bai = "tagged_bam/{sample}.bam.bai"
+    output:
+        csv = "scQC/methCountsPerCell/{sample}_CpGmeth.csv"
+    log: "logs/CpGmethCountsPerCell_{sample}.log"
+    threads: 1
+    conda: CONDA_SHARED_ENV
+    shell:
+        "bamToCountTable.py --dedup -sampleTags SM -featureTags sZ \
+        -o {output.csv} {input.bam} > {log} 2>&1"
+
+rule CpGNOmethCountsPerCell:
+    input:
+        bam = "tagged_bam/{sample}.bam",
+        bai = "tagged_bam/{sample}.bam.bai"
+    output:
+        csv = "scQC/methCountsPerCell/{sample}_CpG_nometh.csv"
+    log: "logs/CpGNOmethCountsPerCell_{sample}.log"
+    threads: 1
+    conda: CONDA_SHARED_ENV
+    shell:
+        "bamToCountTable.py --dedup -sampleTags SM -featureTags sz \
+        -o {output.csv} {input.bam} > {log} 2>&1"

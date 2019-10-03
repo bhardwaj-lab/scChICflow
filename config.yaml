@@ -15,6 +15,8 @@ barcode_list: '/hpc/hub_oudenaarden/group_references/cell_barcodes/maya_384NLA.b
 bwa_index: '/hpc/hub_oudenaarden/vbhardwaj/annotations/hg38_gencode31_extra/BWAIndex/genome.fa'
 # Path to genome fasta file
 genome_fasta: '/hpc/hub_oudenaarden/vbhardwaj/annotations/hg38_gencode31_extra/genome_fasta/genome.fa'
+# Path to GTF file
+gtf_file: '/hpc/hub_oudenaarden/vbhardwaj/annotations/hg38_gencode31_extra/annotation/genes.gtf'
 # regions to remove from signal extraction
 blacklist_bed: "/hpc/hub_oudenaarden/vbhardwaj/annotations/blacklists/hg38-blacklist.v2.bed"
 # minimum mapq threshold to extract signal from
