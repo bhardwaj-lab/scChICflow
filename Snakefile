@@ -4,12 +4,15 @@ import yaml
 ### snakemake_workflows initialization ########################################
 maindir = os.path.dirname(os.path.dirname(workflow.basedir))
 #workflow_rscripts=os.path.join(maindir, "shared", "rscripts")
-
+#shell.executable("/bin/bash")
 ## some internal functions  ###################################################
 def load_configfile(configfile):
    with open(configfile, "r") as f:
        config = yaml.load(f, Loader=yaml.FullLoader)
    return(config)
+
+def set_condaEnv():
+    return{'CONDA_SHARED_ENV': 'env.yaml'}
 
 def get_sample_names(infiles, ext, reads):
     """
@@ -30,6 +33,8 @@ def get_sample_names(infiles, ext, reads):
         s.add(x)
     return sorted(list(s))
 
+# update envs
+globals().update(set_condaEnv())
 # load config file
 globals().update(load_configfile(workflow.overwrite_configfile))
 

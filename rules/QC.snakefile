@@ -23,5 +23,6 @@ rule multiQC:
         out = "logs/multiqc.out",
         err = "logs/multiqc.err"
     threads: 1
+    conda: CONDA_SHARED_ENV
     shell:
         "multiqc -o {params.outdir} {params.outdir} > {log.out} 2> {log.err}"

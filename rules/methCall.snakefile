@@ -16,7 +16,7 @@ rule taps_tagger:
         out = "logs/taps_tagger_{sample}.out",
         err = "logs/taps_tagger_{sample}.err"
     threads: 1
-    #conda: CONDA_scRIA_ENV
+    conda: CONDA_SHARED_ENV
     shell:
         "tapsTagger.py {params.cluster} {params.context} \
         -ref {input.genome} -method {params.method} -bed {output.bed} \
@@ -38,6 +38,7 @@ rule meth_bigwig:
         out = "logs/meth_bigwig_{sample}.out",
         err = "logs/meth_bigwig_{sample}.err"
     threads: 1
+    conda: CONDA_SHARED_ENV
     shell:
         """
         grep 'Z' {input.bed} | sort -k1,1 -k2,2n |\
@@ -51,7 +52,7 @@ rule meth_bigwig:
 
 rule meth_bincounts:
     input:
-        bed = "tagged_bam/{sample}.bam",
+        bam = "tagged_bam/{sample}.bam",
         bai = "tagged_bam/{sample}.bam.bai"
     output:
         csv = "meth_calls/{sample}_CpG_binCounts.csv"
@@ -59,6 +60,7 @@ rule meth_bincounts:
         binsize = methCountsBinSize
     log: "logs/meth_bincounts_{sample}.log"
     threads: 1
+    conda: CONDA_SHARED_ENV
     shell:
         "bamToCountTable.py -sampleTags SM -featureTags sZ -byValue sZ \
         -joinedFeatureTags reference_name -bin {params.binsize} -o {output.csv} {input.bam} > {log} 2>&1"
