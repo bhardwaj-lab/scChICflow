@@ -102,7 +102,7 @@ rule scMultiOmics_qc:
     conda: CONDA_SHARED_ENV
     shell:
         "libraryStatistics.py --nort -t {params.stat} \
-        --plotsOnly -o {output} {input} > {log} 2>&1"
+        --plotsOnly -o {params.outdir} {input} > {log} 2>&1"
 
 rule fragsPerCell:
     input:
