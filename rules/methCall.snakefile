@@ -89,6 +89,21 @@ rule plotCorrelation_meth:
         --plotNumbers -in {input} -o {output} > {log} 2>&1"
 
 ## ----------------------------- QC data per cell for all samples --------------------------- ##
+rule scMultiOmics_qc:
+    input:
+        bam = "tagged_bam/{sample}.bam",
+        bai = "tagged_bam/{sample}.bam.bai"
+    output: "QC/scMultiOmics/{sample}_QCplots/ConversionMatrix.conversions.png"
+    params:
+        outdir = "QC/scMultiOmics/{sample}_QCplots/",
+        stat = 'meth-stats'
+    log: "logs/scMultiOmics_qc_{sample}.log"
+    threads: 1
+    conda: CONDA_SHARED_ENV
+    shell:
+        "libraryStatistics.py --nort -t {params.stat} \
+        --plotsOnly -o {output} {input} > {log} 2>&1"
+
 rule fragsPerCell:
     input:
         bam = "tagged_bam/{sample}.bam",

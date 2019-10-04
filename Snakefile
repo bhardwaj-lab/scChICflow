@@ -74,7 +74,8 @@ def meth_check(type=method):
         expand("tagged_bam/{sample}.bam", sample = samples),
         expand("meth_calls/{sample}_methylation.bed.gz", sample = samples),
         expand("meth_calls/{sample}.methCpG.bw", sample = samples),
-        expand("meth_counts/{sample}_CpG_binCounts.csv", sample = samples)
+        expand("meth_counts/{sample}_CpG_binCounts.csv", sample = samples),
+        expand("QC/scMultiOmics/{sample}_QCplots/ConversionMatrix.conversions.png", sample = samples)
         ])
         if len(samples) > 1:
             file_list.extend(["QC/bwSummary_methCpG_10kBins.npz",
