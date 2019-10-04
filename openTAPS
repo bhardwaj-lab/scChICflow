@@ -43,11 +43,12 @@ def commonYAMLandLogs(baseDir, args, callingScript):
     cluster_config = load_configfile(os.path.join(baseDir, "cluster_config.yaml"))
 
     snakemake_cmd = """
-                    PYTHONNOUSERSITE=True snakemake {snakemakeOptions} --directory {workingdir} --snakefile {snakefile} \
+                    TMPDIR={tempDir} PYTHONNOUSERSITE=True snakemake {snakemakeOptions} --directory {workingdir} --snakefile {snakefile} \
                     --jobs {maxJobs} --configfile {configFile} --keep-going --latency-wait {latency_wait}
                     """.format(snakefile=os.path.join(baseDir, "Snakefile"),
                                maxJobs=args.maxJobs,
                                workingdir=args.outdir,
+                               tempDir=args.tempDir,
                                latency_wait=cluster_config["latency_wait"],
                                snakemakeOptions=str(args.snakemakeOptions or ''),
                                configFile=os.path.join(args.outdir, 'openTAPS_config.yaml')).split()
@@ -135,6 +136,12 @@ def parse_args(defaults=None):
                           dest="outdir",
                           required=True,
                           help="output directory")
+
+    parser.add_argument("-t", "--tempDir",
+                          dest="tempDir",
+                          required=True,
+                          help="Directory to write temp files to",
+                          default='/tmp/')
 
     parser.add_argument("-s", "--snakemakeOptions",
                           dest="snakemakeOptions",

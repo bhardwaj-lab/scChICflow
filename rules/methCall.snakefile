@@ -47,7 +47,8 @@ rule meth_bigwig:
         cut -f1-2 {params.genome}.fai > chrom_sizes.txt 2> {log.err} &&
         bedGraphToBigWig {params.sample}.tmp.bed chrom_sizes.txt {output.bw} 2> {log.err} &&
         gzip {input.bed} &&
-        rm {params.sample}.tmp.bed chrom_sizes.txt
+        rm {params.sample}.tmp.bed chrom_sizes.txt && \
+        echo $TMPDIR >> tmp.txt
         """
 
 rule meth_bincounts:
@@ -95,7 +96,7 @@ rule scMultiOmics_qc:
         bai = "tagged_bam/{sample}.bam.bai"
     output: "QC/scMultiOmics/{sample}_QCplots/ConversionMatrix.conversions.png"
     params:
-        outdir = "QC/scMultiOmics/{sample}_QCplots/",
+        outdir = "QC/scMultiOmics/{sample}_QCplots",
         stat = 'meth-stats'
     log: "logs/scMultiOmics_qc_{sample}.log"
     threads: 1
