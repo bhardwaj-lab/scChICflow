@@ -48,6 +48,8 @@ include: os.path.join(workflow.basedir, "rules", "fastq_map.snakefile")
 
 if method in ['chic-taps', 'nla-taps']:
     include: os.path.join(workflow.basedir, "rules", "methCall.snakefile")
+    if lambda_phage:
+        include: os.path.join(workflow.basedir, "rules", "methCall_lambda_phage.snakefile")
 
 if method in ['chic-taps', 'chic']:
     include: os.path.join(workflow.basedir, "rules", "dedup_and_qc.snakefile")
@@ -77,9 +79,15 @@ def meth_check(type=method):
         expand("meth_counts/{sample}_CpG_binCounts.csv", sample = samples),
         expand("QC/scMultiOmics/{sample}_QCplots/ConversionMatrix.conversions.png", sample = samples)
         ])
+        if lambda_phage:
+            file_list.extend(["tagged_bam/lambda_phage/{sample}.bam",
+                            "tagged_bam/lambda_phage/{sample}.bam.bai",
+                            "meth_calls/lambda_phage/{sample}_stats.txt",
+                            "QC/lambda_stats.txt"])
         if len(samples) > 1:
             file_list.extend(["QC/bwSummary_methCpG_10kBins.npz",
                             "QC/cor-spearman_10kBins.png"])
+
     if type in ['chic', 'chic-taps']:
         file_list.extend([
         expand("dedup_bam/{sample}.bam", sample = samples),

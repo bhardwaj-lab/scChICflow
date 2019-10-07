@@ -23,6 +23,17 @@ rule taps_tagger:
         -o {output.bam} -min_mq {params.min_mq} {input.bam} \
         > {log.out} 2> {log.err}"
 
+rule chrSizes:
+    input: genome_fasta
+    output: temp("chrom_sizes.txt")
+    params:
+        genome = genome_fasta+".fai"
+    threads: 1
+    conda: CONDA_SHARED_ENV
+    shell:
+        "cut -f1-2 {params.genome} > {output}"
+
+
 rule meth_bigwig:
     input:
         bed = "meth_calls/{sample}_methylation.bed",
@@ -44,11 +55,8 @@ rule meth_bigwig:
         grep 'Z' {input.bed} | sort -k1,1 -k2,2n |\
         bedtools merge -s -c 4,5,6 -o distinct,sum,distinct -i - |\
         cut -f1-3,5 | grep -v 'phage\|G\|K\|J' > {params.sample}.tmp.bed &&
-        cut -f1-2 {params.genome}.fai > chrom_sizes.txt 2> {log.err} &&
         bedGraphToBigWig {params.sample}.tmp.bed chrom_sizes.txt {output.bw} 2> {log.err} &&
-        gzip {input.bed} &&
-        rm {params.sample}.tmp.bed chrom_sizes.txt && \
-        echo $TMPDIR >> tmp.txt
+        gzip {input.bed} && rm {params.sample}.tmp.bed
         """
 
 rule meth_bincounts:
@@ -89,7 +97,8 @@ rule plotCorrelation_meth:
         --skipZeros --removeOutliers \
         --plotNumbers -in {input} -o {output} > {log} 2>&1"
 
-## ----------------------------- QC data per cell for all samples --------------------------- ##
+## ----------------------------- Bulk-QC data  --------------------------- ##
+
 rule scMultiOmics_qc:
     input:
         bam = "tagged_bam/{sample}.bam",
@@ -104,6 +113,8 @@ rule scMultiOmics_qc:
     shell:
         "libraryStatistics.py --nort -t {params.stat} \
         --plotsOnly -o {params.outdir} {input} > {log} 2>&1"
+
+## ----------------------------- QC data per cell for all samples --------------------------- ##
 
 rule fragsPerCell:
     input:
