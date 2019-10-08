@@ -46,7 +46,6 @@ rule meth_bigwig_phage:
 rule lamda_stats:
     input: expand("meth_calls/lambda_phage/{sample}_stats.txt", sample = samples)
     output: "QC/lambda_stats.txt"
-    log: "logs/scMultiOmics_qc_{sample}.log"
     threads: 1
     conda: CONDA_SHARED_ENV
     shell:

@@ -80,9 +80,10 @@ def meth_check(type=method):
         expand("QC/scMultiOmics/{sample}_QCplots/ConversionMatrix.conversions.png", sample = samples)
         ])
         if lambda_phage:
-            file_list.extend(["tagged_bam/lambda_phage/{sample}.bam",
-                            "tagged_bam/lambda_phage/{sample}.bam.bai",
-                            "meth_calls/lambda_phage/{sample}_stats.txt",
+            file_list.extend([
+            expand("tagged_bam/lambda_phage/{sample}.bam", sample = samples),
+            expand("tagged_bam/lambda_phage/{sample}.bam.bai", sample = samples),
+            expand("meth_calls/lambda_phage/{sample}_stats.txt", sample = samples),
                             "QC/lambda_stats.txt"])
         if len(samples) > 1:
             file_list.extend(["QC/bwSummary_methCpG_10kBins.npz",

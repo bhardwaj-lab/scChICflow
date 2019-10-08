@@ -27,3 +27,5 @@ method: 'chic-taps'
 bedContext:
 # bin size to count CpG methylation (result is bins*cells matrix)
 methCountsBinSize: 1000
+# Does the sample contain lambda phage as methylation control
+lambda_phage: True
