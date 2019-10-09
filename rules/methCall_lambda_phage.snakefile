@@ -19,7 +19,7 @@ rule taps_tagger_phage:
         "tapsTagger.py {params.cluster} -context Z \
          -ref {input.genome} -method {params.method} -bed {output.bed} \
          -o {output.bam} -min_mq {params.min_mq} {input.bam} \
-         > {output.stats} 2> {log.err}"
+         > {output.stats} 2> {log}"
 
 rule meth_bigwig_phage:
     input:
