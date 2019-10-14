@@ -29,3 +29,5 @@ bedContext:
 methCountsBinSize: 1000
 # Does the sample contain lambda phage as methylation control
 lambda_phage: True
+# genome size (for MACS2 peak calling)
+genomeSize: 2652783500

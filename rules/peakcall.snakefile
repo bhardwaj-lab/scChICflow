@@ -1,53 +1,33 @@
-rule maketags_dedup:
+rule macs2:
     input:
         bam = "dedup_bam/{sample}.bam",
         bai = "dedup_bam/{sample}.bam.bai"
-    output: "homer_peaks/{sample}/tagInfo.txt"
-    params:
-        dir = "homer_peaks/{sample}"
-    log: "logs/maketags_dedup_{sample}.out"
-    threads: 1
-    conda: CONDA_SHARED_ENV
-    shell:
-        "makeTagDirectory {params.dir} {input.bam} > {log} 2>&1"
-
-rule homer_findpeaks:
-    input: "homer_peaks/{sample}/tagInfo.txt"
     output:
-        txt = "homer_peaks/{sample}/peaks.txt",
-        bed = "homer_peaks/{sample}_peaks.bed"
+        peak = "macs2_peaks/{sample}_peaks.narrowPeak",
+        summits = "macs2_peaks/{sample}_summits.bed"
     params:
-        dir = "homer_peaks/{sample}",
-        sample = "{sample}"
-    log: "logs/homer_findpeaks_{sample}.out"
+        outdir = "macs2_peaks",
+        sample = "{sample}",
+        size = genomeSize
+    log: "logs/macs2_{sample}.out"
     threads: 1
     conda: CONDA_SHARED_ENV
     shell:
-        """
-        findPeaks {params.dir} -style factor -center -fdr 0.05 -tagThreshold 2 \
-        -L 2 -F 0 -C 0 > {output.txt} 2> {log} && \
-        awk 'OFS="\\t" {{if ($0 !~ "#") {{print $2, $3, $4, $1, $10, $5 }} }}' \
-        {output.txt} > {output.bed}
-        """
+        "macs2 callpeak -q 0.1 -t {input.bam} -f BAM -g {params.size} --keep-dup all \
+        --outdir {params.outdir} --name {params.sample} 2> {log}"
 
-rule homer_cleanup:
-    input: "homer_peaks/{sample}_peaks.bed"
-    output: directory("QC/homer_peaks_{sample}")
-    params:
-        dir = "homer_peaks/{sample}"
-#        sample = "{sample}"
+rule macs2_bed:
+    input: "macs2_peaks/{sample}_peaks.narrowPeak",
+    output: "macs2_peaks/{sample}_peaks.bed"
     threads: 1
     conda: CONDA_SHARED_ENV
     shell:
-        """
-        rm {params.dir}/*.tags.tsv && \
-        ln -sf -r {params.dir} {output}
-        """
+        "cut -f1-6 {input} > {output}"
 
 if method == 'chic-taps':
     rule count_inpeaks:
         input:
-            peak = "homer_peaks/{sample}_peaks.bed",
+            peak = "macs2_peaks/{sample}_peaks.bed",
             bam = "tagged_bam/{sample}.bam"
         output: "counts/{sample}_peaks.csv"
         params:

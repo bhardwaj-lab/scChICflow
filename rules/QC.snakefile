@@ -9,8 +9,7 @@ def get_multiqc_input():
     if method in ['chic', 'chic-taps']:
         file.append([
             expand("QC/flagstat_dedup_{sample}.txt", sample = samples),
-            expand("QC/readfiltering_dedup_{sample}.txt", sample = samples),
-            expand("QC/homer_peaks_{sample}", sample = samples)
+            expand("QC/readfiltering_dedup_{sample}.txt", sample = samples)
             ])
     return(file)
 

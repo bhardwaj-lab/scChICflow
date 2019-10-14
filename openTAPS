@@ -139,7 +139,6 @@ def parse_args(defaults=None):
 
     parser.add_argument("-t", "--tempDir",
                           dest="tempDir",
-                          required=True,
                           help="Directory to write temp files to",
                           default='/tmp/')
 

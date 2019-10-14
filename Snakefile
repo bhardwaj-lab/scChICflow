@@ -96,8 +96,8 @@ def meth_check(type=method):
         expand("coverage/{sample}_dedup.cpm.bw", sample = samples),
         "QC/featureEnrichment.png",
         "QC/featureEnrichment_biotype.png",
-        expand("homer_peaks/{sample}/tagInfo.txt", sample = samples),
-        expand("homer_peaks/{sample}_peaks.bed", sample = samples)
+        expand("macs2_peaks/{sample}_peaks.narrowPeak", sample = samples),
+        expand("macs2_peaks/{sample}_peaks.bed", sample = samples)
         ])
         if len(samples) > 1:
             file_list.extend(["QC/bwSummary_10kBins.npz",
