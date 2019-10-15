@@ -75,8 +75,9 @@ def meth_check(type=method):
         file_list.extend([
         expand("tagged_bam/{sample}.bam", sample = samples),
         expand("meth_calls/{sample}_methylation.bed.gz", sample = samples),
-        expand("meth_calls/{sample}.methCpG.bw", sample = samples),
+        expand("meth_calls/{sample}.methRatio.bw", sample = samples),
         expand("meth_counts/{sample}_CpG_binCounts.csv", sample = samples),
+        expand("meth_counts/{sample}_CpG_binCounts.unmeth.csv", sample = samples),
         expand("QC/scMultiOmics/{sample}_QCplots/ConversionMatrix.conversions.png", sample = samples)
         ])
         if lambda_phage:
@@ -84,6 +85,7 @@ def meth_check(type=method):
             expand("tagged_bam/lambda_phage/{sample}.bam", sample = samples),
             expand("tagged_bam/lambda_phage/{sample}.bam.bai", sample = samples),
             expand("meth_calls/lambda_phage/{sample}_stats.txt", sample = samples),
+            expand("meth_calls/lambda_phage/{sample}.methRatio.bw", sample = samples),
                             "QC/lambda_stats.txt"])
         if len(samples) > 1:
             file_list.extend(["QC/bwSummary_methCpG_10kBins.npz",

@@ -33,32 +33,78 @@ rule chrSizes:
     shell:
         "cut -f1-2 {params.genome} > {output}"
 
+### Cmd to make bigwigs ###
+methBigwig_cmd = """
+    grep {params.context} {input.bed} | sort -k1,1 -k2,2n |\
+    bedtools merge -s -c 4,5,6 -o distinct,sum,distinct -i - |\
+    cut -f1-3,5 {params.grep} > {params.sample}.tmp.bg &&
+    bedGraphToBigWig {params.sample}.tmp.bg {input.sizes} {output.bw} 2> {log} &&
+    rm {params.sample}.tmp.bg
+    """
 
+## methylated C
 rule meth_bigwig:
     input:
         bed = "meth_calls/{sample}_methylation.bed",
         bam = "tagged_bam/{sample}.bam",
-        bai = "tagged_bam/{sample}.bam.bai"
+        bai = "tagged_bam/{sample}.bam.bai",
+        sizes = "chrom_sizes.txt"
     output:
-        bw = "meth_calls/{sample}.methCpG.bw",
-        gz = "meth_calls/{sample}_methylation.bed.gz"
+        bw = "meth_calls/{sample}.methCpG.bw"
     params:
         sample = '{sample}',
-        genome = genome_fasta
-    log:
-        out = "logs/meth_bigwig_{sample}.out",
-        err = "logs/meth_bigwig_{sample}.err"
+        genome = genome_fasta,
+        context = "'Z'",
+        grep = "| grep -v 'phage\|G\|K\|J'"
+    log: "logs/meth_bigwig_{sample}.err"
     threads: 1
     conda: CONDA_SHARED_ENV
-    shell:
-        """
-        grep 'Z' {input.bed} | sort -k1,1 -k2,2n |\
-        bedtools merge -s -c 4,5,6 -o distinct,sum,distinct -i - |\
-        cut -f1-3,5 | grep -v 'phage\|G\|K\|J' > {params.sample}.tmp.bed &&
-        bedGraphToBigWig {params.sample}.tmp.bed chrom_sizes.txt {output.bw} 2> {log.err} &&
-        gzip {input.bed} && rm {params.sample}.tmp.bed
-        """
+    shell: methBigwig_cmd
 
+## all C
+rule all_bigwig:
+    input:
+        bed = "meth_calls/{sample}_methylation.bed",
+        bam = "tagged_bam/{sample}.bam",
+        bai = "tagged_bam/{sample}.bam.bai",
+        sizes = "chrom_sizes.txt"
+    output:
+        bw = temp("meth_calls/{sample}.allCpG.bw")
+    params:
+        sample = '{sample}',
+        genome = genome_fasta,
+        context = "'z\|Z'",
+        grep = "| grep -v 'phage\|G\|K\|J'"
+    log: "logs/all_bigwig_{sample}.err"
+    threads: 1
+    conda: CONDA_SHARED_ENV
+    shell: methBigwig_cmd
+
+## ratio meth/all
+rule bigwigRatio:
+    input:
+        methbw = "meth_calls/{sample}.methCpG.bw",
+        allbw = "meth_calls/{sample}.allCpG.bw"
+    output: "meth_calls/{sample}.methRatio.bw"
+    params:
+        blklist = blacklist_bed
+    log: "logs/bigwigRatio_{sample}.err"
+    threads: 10
+    conda: CONDA_SHARED_ENV
+    shell:
+        "bigwigCompare -p {threads} -bl {params.blklist} -bs 1 --skipZeroOverZero \
+        --operation ratio -o {output} --skipNAs -b1 {input.methbw} -b2 {input.allbw}"
+
+rule meth_gzip:
+    input:
+        bed = "meth_calls/{sample}_methylation.bed",
+        bw = "meth_calls/{sample}.methRatio.bw"
+    output: "meth_calls/{sample}_methylation.bed.gz"
+    threads: 1
+    shell: 'gzip {input}'
+
+
+## methylation counts per bin per cell
 rule meth_bincounts:
     input:
         bam = "tagged_bam/{sample}.bam",
@@ -73,6 +119,24 @@ rule meth_bincounts:
     shell:
         "bamToCountTable.py -sampleTags SM -featureTags sZ -byValue sZ \
         -joinedFeatureTags reference_name -bin {params.binsize} -o {output.csv} {input.bam} > {log} 2>&1"
+
+## all CpG counts per bin per Cell
+rule unmeth_bincounts:
+    input:
+        bam = "tagged_bam/{sample}.bam",
+        bai = "tagged_bam/{sample}.bam.bai"
+    output:
+        csv = "meth_counts/{sample}_CpG_binCounts.unmeth.csv"
+    params:
+        binsize = methCountsBinSize
+    log: "logs/all_bincounts_{sample}.log"
+    threads: 1
+    conda: CONDA_SHARED_ENV
+    shell:
+        "bamToCountTable.py -sampleTags SM -featureTags sz -byValue sz \
+        -joinedFeatureTags reference_name -bin {params.binsize} -o {output.csv} {input.bam} > {log} 2>&1"
+
+## ----------------------------- Bulk-QC --------------------------- ##
 
 rule bwSummary_meth:
     input:
@@ -96,8 +160,6 @@ rule plotCorrelation_meth:
         "plotCorrelation -p heatmap -c spearman \
         --skipZeros --removeOutliers \
         --plotNumbers -in {input} -o {output} > {log} 2>&1"
-
-## ----------------------------- Bulk-QC data  --------------------------- ##
 
 rule scMultiOmics_qc:
     input:
