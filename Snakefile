@@ -88,8 +88,8 @@ def meth_check(type=method):
             expand("meth_calls/lambda_phage/{sample}.methRatio.bw", sample = samples),
                             "QC/lambda_stats.txt"])
         if len(samples) > 1:
-            file_list.extend(["QC/bwSummary_methCpG_10kBins.npz",
-                            "QC/cor-spearman_10kBins.png"])
+            file_list.extend(["QC/bwSummary_methRatio_10kBins.npz",
+                            "QC/cor-spearman_methRatio_10kBins.png"])
 
     if type in ['chic', 'chic-taps']:
         file_list.extend([
@@ -98,8 +98,10 @@ def meth_check(type=method):
         expand("coverage/{sample}_dedup.cpm.bw", sample = samples),
         "QC/featureEnrichment.png",
         "QC/featureEnrichment_biotype.png",
+        expand("counts_perCell/{sample}_windows.txt", sample = samples),
+        expand("counts_perCell/{sample}_total.txt", sample = samples),
         expand("macs2_peaks/{sample}_peaks.narrowPeak", sample = samples),
-        expand("macs2_peaks/{sample}_peaks.bed", sample = samples)
+        expand("macs2_peaks/{sample}_peaks.bed", sample = samples),
         ])
         if len(samples) > 1:
             file_list.extend(["QC/bwSummary_10kBins.npz",

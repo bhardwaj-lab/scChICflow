@@ -23,16 +23,6 @@ rule taps_tagger:
         -o {output.bam} -min_mq {params.min_mq} {input.bam} \
         > {log.out} 2> {log.err}"
 
-rule chrSizes:
-    input: genome_fasta
-    output: temp("chrom_sizes.txt")
-    params:
-        genome = genome_fasta+".fai"
-    threads: 1
-    conda: CONDA_SHARED_ENV
-    shell:
-        "cut -f1-2 {params.genome} > {output}"
-
 ### Cmd to make bigwigs ###
 methBigwig_cmd = """
     grep {params.context} {input.bed} | sort -k1,1 -k2,2n |\
@@ -112,7 +102,7 @@ rule meth_bincounts:
     output:
         csv = "meth_counts/{sample}_CpG_binCounts.csv"
     params:
-        binsize = methCountsBinSize
+        binsize = binSize
     log: "logs/meth_bincounts_{sample}.log"
     threads: 1
     conda: CONDA_SHARED_ENV
@@ -128,7 +118,7 @@ rule unmeth_bincounts:
     output:
         csv = "meth_counts/{sample}_CpG_binCounts.unmeth.csv"
     params:
-        binsize = methCountsBinSize
+        binsize = binSize
     log: "logs/all_bincounts_{sample}.log"
     threads: 1
     conda: CONDA_SHARED_ENV
@@ -140,9 +130,9 @@ rule unmeth_bincounts:
 
 rule bwSummary_meth:
     input:
-        bw = expand("meth_calls/{sample}.methCpG.bw", sample = samples),
+        bw = expand("meth_calls/{sample}.methRatio.bw", sample = samples),
         bl = blacklist_bed
-    output: "QC/bwSummary_methCpG_10kBins.npz"
+    output: "QC/bwSummary_methRatio_10kBins.npz"
     log: "logs/bwSummary_methCpG.log"
     threads: 8
     conda: CONDA_SHARED_ENV
@@ -151,8 +141,8 @@ rule bwSummary_meth:
         --smartLabels -b {input.bw} -o {output}  > {log} 2>&1"
 
 rule plotCorrelation_meth:
-    input: "QC/bwSummary_methCpG_10kBins.npz"
-    output: "QC/cor-spearman_methCpG_10kBins.png"
+    input: "QC/bwSummary_methRatio_10kBins.npz"
+    output: "QC/cor-spearman_methRatio_10kBins.png"
     log: "logs/plotCorrelation_CpG.log"
     threads: 1
     conda: CONDA_SHARED_ENV
@@ -185,7 +175,7 @@ rule fragsPerCell:
     output:
         csv = "scQC/fragsPerCell/{sample}.csv"
     params:
-        binsize = methCountsBinSize
+        binsize = binSize
     log: "logs/fragsPerCell_{sample}.log"
     threads: 1
     conda: CONDA_SHARED_ENV

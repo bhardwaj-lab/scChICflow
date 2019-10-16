@@ -102,9 +102,18 @@ if trim:
         shell:
             "fastqc -o {params.outdir} {input} > {log} 2>&1"
 
+## prep chromosome sizes for bigwigs and stuff
+rule chrSizes:
+    input: genome_fasta
+    output: temp("chrom_sizes.txt")
+    params:
+        genome = genome_fasta+".fai"
+    threads: 1
+    conda: CONDA_SHARED_ENV
+    shell:
+        "cut -f1-2 {params.genome} > {output}"
 
-
-## MAP
+## MAP Fastq
 rule bwa_map:
     input:
         r1 = "FASTQ_trimmed/{sample}"+reads[0]+".fastq.gz" if trim else "FASTQ/umiTrimmed_{sample}"+reads[0]+".fastq.gz",
@@ -138,6 +147,7 @@ rule flagstat_bwa:
     conda: CONDA_SHARED_ENV
     shell: "samtools flagstat {input} > {output}"
 
+## get some stats
 rule readfiltering_bwa:
     input:
         bam = "bwa_mapped/{sample}.bam",

@@ -25,8 +25,8 @@ min_mapq: 10
 method: 'chic-taps'
 # context to select to create bed files (empty means consider all contexts)
 bedContext:
-# bin size to count CpG methylation (result is bins*cells matrix)
-methCountsBinSize: 1000
+# bin size to count CpG methylation/ChIC-fragments (result is bins*cells matrix)
+binSize: 1000
 # Does the sample contain lambda phage as methylation control
 lambda_phage: True
 # genome size (for MACS2 peak calling)
