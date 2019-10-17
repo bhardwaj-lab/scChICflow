@@ -75,23 +75,25 @@ rule bigwigRatio:
     input:
         methbw = "meth_calls/{sample}.methCpG.bw",
         allbw = "meth_calls/{sample}.allCpG.bw"
-    output: "meth_calls/{sample}.methRatio.bw"
+    output: "coverage/{sample}.methRatio.bw"
     params:
         blklist = blacklist_bed
     log: "logs/bigwigRatio_{sample}.err"
-    threads: 10
+    threads: 30
     conda: CONDA_SHARED_ENV
     shell:
-        "bigwigCompare -p {threads} -bl {params.blklist} -bs 1 --skipZeroOverZero \
+        "bigwigCompare -p {threads} -bl {params.blklist} -bs 100 --skipZeroOverZero \
         --operation ratio -o {output} --skipNAs -b1 {input.methbw} -b2 {input.allbw}"
 
 rule meth_gzip:
     input:
         bed = "meth_calls/{sample}_methylation.bed",
-        bw = "meth_calls/{sample}.methRatio.bw"
+        methbw = "meth_calls/{sample}.methCpG.bw",
+        allbw = "meth_calls/{sample}.allCpG.bw",
+        bw = "coverage/{sample}.methRatio.bw"
     output: "meth_calls/{sample}_methylation.bed.gz"
     threads: 1
-    shell: 'gzip {input}'
+    shell: 'gzip {input.bed}'
 
 
 ## methylation counts per bin per cell
@@ -100,7 +102,7 @@ rule meth_bincounts:
         bam = "tagged_bam/{sample}.bam",
         bai = "tagged_bam/{sample}.bam.bai"
     output:
-        csv = "meth_counts/{sample}_CpG_binCounts.csv"
+        csv = "meth_counts/{sample}_CpG_binCounts.meth.csv"
     params:
         binsize = binSize
     log: "logs/meth_bincounts_{sample}.log"
@@ -130,7 +132,7 @@ rule unmeth_bincounts:
 
 rule bwSummary_meth:
     input:
-        bw = expand("meth_calls/{sample}.methRatio.bw", sample = samples),
+        bw = expand("coverage/{sample}.methRatio.bw", sample = samples),
         bl = blacklist_bed
     output: "QC/bwSummary_methRatio_10kBins.npz"
     log: "logs/bwSummary_methCpG.log"

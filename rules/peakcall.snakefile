@@ -19,10 +19,12 @@ rule macs2:
 rule macs2_bed:
     input: "macs2_peaks/{sample}_peaks.narrowPeak",
     output: "macs2_peaks/{sample}_peaks.bed"
+    params:
+        qvalue = "0.1"
     threads: 1
     conda: CONDA_SHARED_ENV
     shell:
-        "cut -f1-6 {input} > {output}"
+        "awk 'if $9 < {params.qvalue} {{print $0}}' {input} | cut -f1-6 > {output}"
 
 if method == 'chic-taps':
     rule count_inpeaks:
@@ -52,7 +54,7 @@ rule split_cells:
     threads: 1
     conda: CONDA_SHARED_ENV
     shell:
-        "ln -r -s {input.bam} {params.out} && \
+        "ln -rsf {input.bam} {params.out} && \
         bamtools split -tag BC -tagPrefix '' -in {params.out} > {log} 2>&1 && \
         touch {output}"
 
