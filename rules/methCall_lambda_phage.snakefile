@@ -37,41 +37,62 @@ rule lamda_stats:
         rm files.txt z.txt Z.txt
         """
 
-rule meth_bigwig_phage:
+rule meth_bigwig_phage1:
     input:
         bam = "tagged_bam/lambda_phage/{sample}.bam",
         bai = "tagged_bam/lambda_phage/{sample}.bam.bai",
-        bed = "meth_calls/lambda_phage/{sample}_mCpG.bed",
-        sizes = "chrom_sizes.txt"
+        bed = "meth_calls/lambda_phage/{sample}_mCpG.bed"
     output:
-        bw = temp("meth_calls/lambda_phage/{sample}.methCpG.bw")
+        bw = temp("meth_calls/lambda_phage/{sample}.lmeth.bg")
     params:
         sample = 'phage_{sample}',
         genome = genome_fasta,
         context = "'Z'",
         grep = ""
-    log: "logs/meth_bigwig_phage_{sample}.err"
+    log: "logs/meth_bigwig_phage1_{sample}.err"
     threads: 1
     conda: CONDA_SHARED_ENV
-    shell: methBigwig_cmd
+    shell: methBigwig_cmd1
 
-rule all_bigwig_phage:
+
+rule meth_bigwig_phage2:
+    input:
+        bg = "meth_calls/lambda_phage/{sample}.lmeth.bg",
+        sizes = "chrom_sizes.txt"
+    output: temp("meth_calls/lambda_phage/{sample}.methCpG.bw")
+    log: "logs/meth_bigwig_phage2_{sample}.err"
+    threads: 1
+    conda: CONDA_SHARED_ENV
+    shell: methBigwig_cmd2
+
+
+rule all_bigwig_phage1:
     input:
         bam = "tagged_bam/lambda_phage/{sample}.bam",
         bai = "tagged_bam/lambda_phage/{sample}.bam.bai",
-        bed = "meth_calls/lambda_phage/{sample}_mCpG.bed",
-        sizes = "chrom_sizes.txt"
+        bed = "meth_calls/lambda_phage/{sample}_mCpG.bed"
     output:
-        bw = temp("meth_calls/lambda_phage/{sample}.all.bw")
+        bw = temp("meth_calls/lambda_phage/{sample}.lall.bg")
     params:
         sample = 'phage_{sample}',
         genome = genome_fasta,
         context = "'z\|Z'",
         grep = ""
-    log: "logs/meth_bigwig_phage_{sample}.err"
+    log: "logs/meth_bigwig_phage1_{sample}.err"
     threads: 1
     conda: CONDA_SHARED_ENV
-    shell: methBigwig_cmd
+    shell: methBigwig_cmd1
+
+rule all_bigwig_phage2:
+    input:
+        bg = "meth_calls/lambda_phage/{sample}.lall.bg",
+        sizes = "chrom_sizes.txt"
+    output: temp("meth_calls/lambda_phage/{sample}.all.bw")
+    log: "logs/meth_bigwig_phage2_{sample}.err"
+    threads: 1
+    conda: CONDA_SHARED_ENV
+    shell: methBigwig_cmd2
+
 
 ## ratio meth/all
 rule bigwigRatio_lambda:
