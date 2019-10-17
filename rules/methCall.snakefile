@@ -111,15 +111,15 @@ rule bigwigRatio:
         "bigwigCompare -p {threads} -bl {params.blklist} -bs 100 --skipZeroOverZero \
         --operation ratio -o {output} --skipNAs -b1 {input.methbw} -b2 {input.allbw}"
 
-rule meth_gzip:
-    input:
-        bed = "meth_calls/{sample}_methylation.bed",
-        methbw = "meth_calls/{sample}.methCpG.bw",
-        allbw = "meth_calls/{sample}.allCpG.bw",
-        bw = "coverage/{sample}.methRatio.bw"
-    output: "meth_calls/{sample}_methylation.bed.gz"
-    threads: 1
-    shell: 'gzip {input.bed}'
+#rule meth_gzip:
+#    input:
+#        bed = "meth_calls/{sample}_methylation.bed",
+#        methbw = "meth_calls/{sample}.methCpG.bw",
+#        allbw = "meth_calls/{sample}.allCpG.bw",
+#        bw = "coverage/{sample}.methRatio.bw"
+#    output: "meth_calls/{sample}_methylation.bed.gz"
+#    threads: 1
+#    shell: 'gzip {input.bed}'
 
 
 ## methylation counts per bin per cell

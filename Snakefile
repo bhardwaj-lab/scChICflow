@@ -74,7 +74,7 @@ def meth_check(type=method):
     if type in ['chic-taps', 'nla-taps']:
         file_list.extend([
         expand("tagged_bam/{sample}.bam", sample = samples),
-        expand("meth_calls/{sample}_methylation.bed.gz", sample = samples),
+        #expand("meth_calls/{sample}_methylation.bed.gz", sample = samples),
         expand("coverage/{sample}.methRatio.bw", sample = samples),
         expand("meth_counts/{sample}_CpG_binCounts.meth.csv", sample = samples),
         expand("meth_counts/{sample}_CpG_binCounts.unmeth.csv", sample = samples),
