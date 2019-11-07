@@ -50,8 +50,8 @@ rule umi_trimming:
         r1 = "FASTQ/downsample_{sample}"+reads[0]+".fastq.gz" if downsample else "FASTQ/{sample}"+reads[0]+".fastq.gz",
         r2 = "FASTQ/downsample_{sample}"+reads[1]+".fastq.gz" if downsample else "FASTQ/{sample}"+reads[1]+".fastq.gz"
     output:
-        r1 = "FASTQ/umiTrimmed_{sample}"+reads[0]+".fastq.gz",
-        r2 = "FASTQ/umiTrimmed_{sample}"+reads[1]+".fastq.gz"
+        r1 = temp("FASTQ/umiTrimmed_{sample}"+reads[0]+".fastq.gz"),
+        r2 = temp("FASTQ/umiTrimmed_{sample}"+reads[1]+".fastq.gz")
     params:
         barcodes = barcode_list
     log:

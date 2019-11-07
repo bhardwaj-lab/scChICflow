@@ -139,8 +139,18 @@ def parse_args(defaults=None):
 
     parser.add_argument("-t", "--tempDir",
                           dest="tempDir",
-                          help="Directory to write temp files to",
+                          help="Directory to store temporary files. (default: '%(default)s')",
                           default='/tmp/')
+
+    parser.add_argument("-m", "--method",
+                          dest="method",
+                          help="protocol used. option: nla-taps, chic-taps or chic. (default: '%(default)s')",
+                          default='chic-taps')
+
+    parser.add_argument("-q", "--minQ",
+                          dest="min_mapq",
+                          help="minimum mapping quality (filter to apply after mapping). (default: '%(default)s')",
+                          default=10)
 
     parser.add_argument("-s", "--snakemakeOptions",
                           dest="snakemakeOptions",

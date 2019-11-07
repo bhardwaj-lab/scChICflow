@@ -52,11 +52,14 @@ rule bamCoverage_dedup:
         bai = "dedup_bam/{sample}.bam.bai",
         blacklist = blacklist_bed
     output: "coverage/{sample}_dedup.cpm.bw"
+    params:
+        ignore = "chrX chrY chrM"
     log: "logs/bamCoverage_dedup_{sample}.out"
     threads: 10
     conda: CONDA_SHARED_ENV
     shell:
-        "bamCoverage --normalizeUsing CPM -p {threads} -bl {input.blacklist} \
+        "bamCoverage --normalizeUsing CPM -p {threads} \
+        -ignore {params.ignore} -bl {input.blacklist} \
         -b {input.bam} -o {output} > {log} 2>&1"
 
 rule plotEnrichment:

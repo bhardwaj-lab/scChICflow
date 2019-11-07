@@ -19,15 +19,15 @@ genome_fasta: '/hpc/hub_oudenaarden/vbhardwaj/annotations/hg38_gencode31_extra/g
 gtf_file: '/hpc/hub_oudenaarden/vbhardwaj/annotations/hg38_gencode31_extra/annotation/genes.gtf'
 # regions to remove from signal extraction
 blacklist_bed: "/hpc/hub_oudenaarden/vbhardwaj/annotations/blacklists/hg38-blacklist.v2.bed"
-# minimum mapq threshold to extract signal from
-min_mapq: 10
-# which protocol? (options: 'nla-taps', 'chic-taps', 'chic')
-method: 'chic-taps'
+# genome size (for MACS2 peak calling)
+genomeSize: 2652783500
 # context to select to create bed files (empty means consider all contexts)
 bedContext:
 # bin size to count CpG methylation/ChIC-fragments (result is bins*cells matrix)
 binSize: 1000
 # Does the sample contain lambda phage as methylation control
 lambda_phage: True
-# genome size (for MACS2 peak calling)
-genomeSize: 2652783500
+# minimum mapq threshold to extract signal from
+min_mapq:
+# which protocol? (options: 'nla-taps', 'chic-taps', 'chic')
+method:
