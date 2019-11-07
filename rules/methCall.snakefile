@@ -108,7 +108,7 @@ rule bigwigRatio:
     threads: 30
     conda: CONDA_SHARED_ENV
     shell:
-        "bigwigCompare -p {threads} -bl {params.blklist} -bs 100 --skipZeroOverZero \
+        "bigwigCompare -p {threads} -bl {params.blklist} -bs 1 --skipZeroOverZero \
         --operation ratio -o {output} --skipNAs -b1 {input.methbw} -b2 {input.allbw}"
 
 #rule meth_gzip:
