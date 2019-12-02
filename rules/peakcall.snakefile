@@ -42,98 +42,154 @@ if method == 'chic-taps':
             -minMQ {params.min_mq} --dedup --filterXA -sampleTags SM \
             -joinedFeatureTags reference_name {input.bam}"
 
-## split the dedup bam into cells (make temp)
-rule split_cells:
+## count deduplicated reads per cell
+rule countFrags_perCell:
     input:
         bam = "dedup_bam/{sample}.bam",
         bai = "dedup_bam/{sample}.bam.bai"
-    output: "dedup_bam/{sample}/split_finished.txt"
-    params:
-        out = "dedup_bam/{sample}/{sample}.bam"
-    log: "logs/split_cells_{sample}.out"
-    threads: 1
-    conda: CONDA_SHARED_ENV
-    shell:
-        "ln -rsf {input.bam} {params.out} && \
-        bamtools split -tag BC -tagPrefix '' -in {params.out} > {log} 2>&1 && \
-        touch {output}"
-
-rule idx_cells:
-    input: "dedup_bam/{sample}/split_finished.txt"
-    output: "dedup_bam/{sample}/idx_finished.txt"
-    params:
-        dir = "dedup_bam/{sample}"
-    log: "logs/idx_cells_{sample}.out"
-    threads: 1
-    conda: CONDA_SHARED_ENV
-    shell:
-        "for file in {params.dir}/*.bam; do samtools index $file; done && \
-        touch {output}"
-
-## count total fragments per cell
-rule countFrags_perCell:
-    input: "dedup_bam/{sample}/split_finished.txt"
-    output:
-        names = temp("dedup_bam/{sample}.n.txt"),
-        counts = temp("dedup_bam/{sample}.c.txt")
-    params:
-        folder = "dedup_bam/{sample}"
+    output: "counts/{sample}.per_barcode.tsv"
+    log: "logs/counts_{sample}.out"
     threads: 1
     conda: CONDA_SHARED_ENV
     shell:
         """
-        for dat in {params.folder}/*.bam;
-        do echo $(basename $dat .bam) | sed 's/.BC_/\t/g' >> {output.names}
-        bamtools count -in $dat  >> {output.counts}
-        done
+        samtools view {input.bam} | grep "BC:Z:" |\
+        sed 's/.*BC:Z:\([ACGT]*\).*/\\1/' | sort | uniq -c > {output} 2> {log}
         """
-
-rule countFrags_cleanup:
-    input:
-        names = "dedup_bam/{sample}.n.txt",
-        counts = "dedup_bam/{sample}.c.txt"
-    output: "counts_perCell/{sample}_total.txt"
-    threads: 1
-    conda: CONDA_SHARED_ENV
-    shell:
-        "paste {input.names} {input.counts} > {output}"
 
 ## make windows (of given size) in the genome
 rule makeWindows:
     input: "chrom_sizes.txt"
-    output: temp("dedup_bam/counting_windows.bed")
+    output: temp("dedup_bam/counting_windows.saf")
     params:
         size = binSize
     log: "logs/makeWindows.err"
     threads: 1
     conda: CONDA_SHARED_ENV
     shell:
-        "bedtools makewindows -w {params.size} -g {input} > {output} 2> {log}"
+        """
+        bedtools makewindows -w {params.size} -g {input} |\
+        awk 'OFS="\\t" {{ print $1"_"$2"_"$3, $1, $2, $3, "." }}' > {output} 2> {log}
+        """
 
-## count reads in windows per cell per sample
+## count reads in windows using featurecounts (bulk)
 rule count_windows:
     input:
-        windows = "dedup_bam/counting_windows.bed",
-        split = "dedup_bam/{sample}/split_finished.txt",
-        idx = "dedup_bam/{sample}/idx_finished.txt"
-    output: 'counts_perCell/{sample}_windows.txt'
-    params:
-        outdir = "dedup_bam/{sample}"
-    log: "logs/count_windows_{sample}.err"
+        saf = "dedup_bam/counting_windows.saf",
+        bam = "dedup_bam/{sample}.bam",
+        bai = "dedup_bam/{sample}.bam.bai"
+    output:
+        counts = "counts/{sample}.windows_total.tsv",
+        bam = temp("counts/{sample}.bam.featureCounts.bam")
+    log: "logs/featurecounts_{sample}.err"
+    threads: 10
+    conda: CONDA_SHARED_ENV
+    shell:
+        "featureCounts -t {threads} -a {input.saf} -F SAF -R BAM -s 0 \
+        -o {output.counts} {input.bam} > {log} 2>&1"
+
+rule fcount_index:
+    input: "counts/{sample}.bam.featureCounts.bam"
+    output: temp("counts/{sample}.bam.featureCounts.bam.bai")
     threads: 1
     conda: CONDA_SHARED_ENV
     shell:
-        "bedtools multicov -D -bed {input.windows} -bams {params.outdir}/*.bam > {output} 2> {log}"
+        "samtools index {input} {output}"
+
+rule count_windows_cells:
+    input:
+        bam = "counts/{sample}.bam.featureCounts.bam",
+        bai = "counts/{sample}.bam.featureCounts.bam.bai"
+    output: "counts/{sample}.windows_per_barcode.tsv"
+    log: "logs/featurecounts_{sample}.err"
+    threads: 1
+    conda: CONDA_SHARED_ENV
+    shell:
+        "umi_tools count --per-gene --gene-tag=XT --assigned-status-tag=XS \
+        --per-cell --cell-tag=BC --umi-tag=RX --extract-umi-method=tag \
+        -I {input.bam} -S {output} -v 4 --log2stderr --log={log}"
+
+
+## split the dedup bam into cells (make temp)
+#rule split_cells:
+#    input:
+#        bam = "dedup_bam/{sample}.bam",
+#        bai = "dedup_bam/{sample}.bam.bai"
+#    output: "dedup_bam/{sample}/split_finished.txt"
+#    params:
+#        out = "dedup_bam/{sample}/{sample}.bam"
+#    log: "logs/split_cells_{sample}.out"
+#    threads: 1
+#    conda: CONDA_SHARED_ENV
+#    shell:
+#        "ln -rsf {input.bam} {params.out} && \
+#        bamtools split -tag BC -tagPrefix '' -in {params.out} > {log} 2>&1 && \
+#        touch {output}"
+
+#rule idx_cells:
+#    input: "dedup_bam/{sample}/split_finished.txt"
+#    output: "dedup_bam/{sample}/idx_finished.txt"
+#    params:
+#        dir = "dedup_bam/{sample}"
+#    log: "logs/idx_cells_{sample}.out"
+#    threads: 1
+#    conda: CONDA_SHARED_ENV
+#    shell:
+#        "for file in {params.dir}/*.bam; do samtools index $file; done && \
+#        touch {output}"
+
+## count total fragments per cell
+#rule countFrags_perCell:
+#    input: "dedup_bam/{sample}/split_finished.txt"
+#    output:
+#        names = temp("dedup_bam/{sample}.n.txt"),
+#        counts = temp("dedup_bam/{sample}.c.txt")
+#    params:
+#        folder = "dedup_bam/{sample}"
+#    threads: 1
+#    conda: CONDA_SHARED_ENV
+#    shell:
+#        """
+#        for dat in {params.folder}/*.bam;
+#        do echo $(basename $dat .bam) | sed 's/.BC_/\t/g' >> {output.names}
+#        bamtools count -in $dat  >> {output.counts}
+#        done
+#        """
+
+#rule countFrags_cleanup:
+#    input:
+#        names = "dedup_bam/{sample}.n.txt",
+#        counts = "dedup_bam/{sample}.c.txt"
+#    output: "counts_perCell/{sample}_total.txt"
+#    threads: 1
+#    conda: CONDA_SHARED_ENV
+#    shell:
+#        "paste {input.names} {input.counts} > {output}"
+
+## count reads in windows per cell per sample
+#rule count_windows:
+#    input:
+#        windows = "dedup_bam/counting_windows.bed",
+#        split = "dedup_bam/{sample}/split_finished.txt",
+#        idx = "dedup_bam/{sample}/idx_finished.txt"
+#    output: 'counts_perCell/{sample}_windows.txt'
+#    params:
+#        outdir = "dedup_bam/{sample}"
+#    log: "logs/count_windows_{sample}.err"
+#    threads: 1
+#    conda: CONDA_SHARED_ENV
+#    shell:
+#        "bedtools multicov -D -bed {input.windows} -bams {params.outdir}/*.bam > {output} 2> {log}"
 
 ## remove splitBAM
-rule cleanup_splitbam:
-    input:
-        bedcounts = "counts_perCell/{sample}_windows.txt",
-        fragcounts = "counts_perCell/{sample}_total.txt"
-    output: temp("rm_finished_{sample}.txt")
-    params:
-        folder = "dedup_bam/{sample}"
-    threads: 1
-    conda: CONDA_SHARED_ENV
-    shell:
-        "rm -rf {params.folder} && touch {output}"
+#rule cleanup_splitbam:
+#    input:
+#        bedcounts = "counts_perCell/{sample}_windows.txt",
+#        fragcounts = "counts_perCell/{sample}_total.txt"
+#    output: temp("rm_finished_{sample}.txt")
+#    params:
+#        folder = "dedup_bam/{sample}"
+#    threads: 1
+#    conda: CONDA_SHARED_ENV
+#    shell:
+#        "rm -rf {params.folder} && touch {output}"

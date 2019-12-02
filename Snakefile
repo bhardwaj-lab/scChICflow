@@ -98,8 +98,9 @@ def meth_check(type=method):
         expand("coverage/{sample}_dedup.cpm.bw", sample = samples),
         "QC/featureEnrichment.png",
         "QC/featureEnrichment_biotype.png",
-        expand("counts_perCell/{sample}_windows.txt", sample = samples),
-        expand("counts_perCell/{sample}_total.txt", sample = samples),
+        expand("counts/{sample}.per_barcode.tsv", sample = samples),
+        expand("counts/{sample}.windows_total.tsv", sample = samples),
+        expand("counts/{sample}.windows_per_barcode.tsv", sample = samples),
         expand("macs2_peaks/{sample}_peaks.narrowPeak", sample = samples),
         expand("macs2_peaks/{sample}_peaks.bed", sample = samples),
         ])
