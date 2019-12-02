@@ -107,7 +107,7 @@ rule count_windows_cells:
     shell:
         "umi_tools count --per-gene --gene-tag=XT --assigned-status-tag=XS \
         --per-cell --cell-tag=BC --umi-tag=RX --extract-umi-method=tag \
-        -I {input.bam} -S {output} -v 4 --log2stderr --log={log}"
+        --method=percentile -I {input.bam} -S {output} -v 4 --log2stderr --log={log}"
 
 
 ## split the dedup bam into cells (make temp)
