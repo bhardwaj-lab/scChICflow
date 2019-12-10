@@ -24,6 +24,10 @@ def write_configfile(configFile, config):
     with open(configFile, 'w') as f:
         yaml.dump(config, f, default_flow_style=False)
 
+def get_current_condaEnv():
+    env = os.environ['CONDA_PREFIX']
+    return(env)
+
 def commonYAMLandLogs(baseDir, args, callingScript):
     """
     Merge dictionaries, write YAML files, construct the snakemake command
@@ -59,6 +63,7 @@ def commonYAMLandLogs(baseDir, args, callingScript):
     if args.cluster:
         ## always --use-conda on cluster
         snakemake_cmd += ["--use-conda"]
+        snakemake_cmd += ["--conda-prefix " + args.conda_dir]
         snakemake_cmd += ["--cluster-config",
                           os.path.join(baseDir, "cluster_config.yaml"),
                           "--cluster", "'" + cluster_config["cluster_cmd"], "'"]
@@ -165,6 +170,11 @@ def parse_args(defaults=None):
                          action="store_true",
                          default=False,
                          help="run workflow on the cluster (requires configuration of cluster_cmd in the config) (default: '%(default)s')")
+
+    parser.add_argument("-cd", "--conda-dir",
+                         dest="conda_dir",
+                         default=get_current_condaEnv(),
+                         help="path to the conda directory where scRIA is installed (used only if --cluster is specified) (default: '%(default)s')")
 
     parser.add_argument("-j", "--jobs",
                          dest="maxJobs",
