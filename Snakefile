@@ -117,7 +117,7 @@ def meth_check(type=method):
 localrules: FASTQ1, FASTQ2
 rule all:
     input:
-        expand("FASTQ/umiTrimmed_{sample}{read}.fastq.gz", sample = samples, read = reads),
+        #expand("FASTQ/umi_trimmed/umiTrimmed_{sample}{read}.fastq.gz", sample = samples, read = reads),
         run_Trimming(trim),
         expand("QC/FastQC/{sample}{read}_fastqc.html", sample = samples, read=reads),
         expand("bwa_mapped/{sample}.bam", sample = samples),

@@ -33,8 +33,8 @@ if downsample:
             r1 = "FASTQ/{sample}"+reads[0]+".fastq.gz",
             r2 = "FASTQ/{sample}"+reads[1]+".fastq.gz"
         output:
-            r1 = "FASTQ/downsample_{sample}"+reads[0]+".fastq.gz",
-            r2 = "FASTQ/downsample_{sample}"+reads[1]+".fastq.gz"
+            r1 = temp("FASTQ/downsampled/downsample_{sample}"+reads[0]+".fastq.gz"),
+            r2 = temp("FASTQ/downsampled/downsample_{sample}"+reads[1]+".fastq.gz")
         params:
             num_reads = downsample
         threads: 10
@@ -47,11 +47,11 @@ if downsample:
 
 rule umi_trimming:
     input:
-        r1 = "FASTQ/downsample_{sample}"+reads[0]+".fastq.gz" if downsample else "FASTQ/{sample}"+reads[0]+".fastq.gz",
-        r2 = "FASTQ/downsample_{sample}"+reads[1]+".fastq.gz" if downsample else "FASTQ/{sample}"+reads[1]+".fastq.gz"
+        r1 = lambda wildcards: "FASTQ/downsampled/downsample_{sample}"+reads[0]+".fastq.gz" if downsample else "FASTQ/{sample}"+reads[0]+".fastq.gz",
+        r2 = lambda wildcards: "FASTQ/downsampled/downsample_{sample}"+reads[1]+".fastq.gz" if downsample else "FASTQ/{sample}"+reads[1]+".fastq.gz"
     output:
-        r1 = temp("FASTQ/umiTrimmed_{sample}"+reads[0]+".fastq.gz"),
-        r2 = temp("FASTQ/umiTrimmed_{sample}"+reads[1]+".fastq.gz")
+        r1 = temp("FASTQ/umi_trimmed/umiTrimmed_{sample}"+reads[0]+".fastq.gz"),
+        r2 = temp("FASTQ/umi_trimmed/umiTrimmed_{sample}"+reads[1]+".fastq.gz")
     params:
         barcodes = barcode_list
     log:
@@ -68,8 +68,8 @@ rule umi_trimming:
 if trim:
     rule cutadapt:
         input:
-            r1 = "FASTQ/umiTrimmed_{sample}"+reads[0]+".fastq.gz",
-            r2 = "FASTQ/umiTrimmed_{sample}"+reads[1]+".fastq.gz"
+            r1 = "FASTQ/umi_trimmed/umiTrimmed_{sample}"+reads[0]+".fastq.gz",
+            r2 = "FASTQ/umi_trimmed/umiTrimmed_{sample}"+reads[1]+".fastq.gz"
         output:
             r1 = "FASTQ_trimmed/{sample}"+reads[0]+".fastq.gz",
             r2 = "FASTQ_trimmed/{sample}"+reads[1]+".fastq.gz"
@@ -116,8 +116,8 @@ rule chrSizes:
 ## MAP Fastq
 rule bwa_map:
     input:
-        r1 = "FASTQ_trimmed/{sample}"+reads[0]+".fastq.gz" if trim else "FASTQ/umiTrimmed_{sample}"+reads[0]+".fastq.gz",
-        r2 = "FASTQ_trimmed/{sample}"+reads[1]+".fastq.gz" if trim else "FASTQ/umiTrimmed_{sample}"+reads[1]+".fastq.gz",
+        r1 = lambda wildcards: "FASTQ_trimmed/{sample}"+reads[0]+".fastq.gz" if trim else "FASTQ/umi_trimmed/umiTrimmed_{sample}"+reads[0]+".fastq.gz",
+        r2 = lambda wildcards: "FASTQ_trimmed/{sample}"+reads[1]+".fastq.gz" if trim else "FASTQ/umi_trimmed/umiTrimmed_{sample}"+reads[1]+".fastq.gz",
         idx = bwa_index
     output: "bwa_mapped/{sample}.bam"
     params:

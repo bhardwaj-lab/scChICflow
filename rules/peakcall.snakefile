@@ -20,11 +20,13 @@ rule macs2_bed:
     input: "macs2_peaks/{sample}_peaks.narrowPeak",
     output: "macs2_peaks/{sample}_peaks.bed"
     params:
-        qvalue = "0.1"
+        qvalue = "1"# -log10(0.1)
     threads: 1
     conda: CONDA_SHARED_ENV
     shell:
-        "awk 'if $9 < {params.qvalue} {{print $0}}' {input} | cut -f1-6 > {output}"
+        """
+        awk 'FS="\t" {{ if ($9 >= {params.qvalue}) {{print $1,$2,$3,$4,$5,$6}} }}' {input} > {output}
+        """
 
 if method == 'chic-taps':
     rule count_inpeaks:
@@ -53,8 +55,9 @@ rule countFrags_perCell:
     conda: CONDA_SHARED_ENV
     shell:
         """
-        samtools view {input.bam} | grep "BC:Z:" |\
-        sed 's/.*BC:Z:\([ACGT]*\).*/\\1/' | sort | uniq -c > {output} 2> {log}
+        samtools view {input.bam} | grep -o "BC:Z:[ATGC]*" | \
+        sed 's/BC:Z://' | sort | uniq -c | \
+        awk 'OFS="\t" {{ print $2, $1 }}' > {output} 2> {log}
         """
 
 ## make windows (of given size) in the genome
