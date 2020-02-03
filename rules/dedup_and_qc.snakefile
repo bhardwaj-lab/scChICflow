@@ -1,11 +1,18 @@
+## explanation for the parameters
+# umis are de-dupped per cell using the CB and RX tags, and only R1 start pos
+# due to 3-bp UMIs, I use no edit distance threshold (method = unique)
+# I consider reads with 3'- soft-clipping of 2 or more bases as distinct from non-clipped reads
+
 rule umi_dedup:
     input:
         bam = "bwa_mapped/{sample}.bam",
         idx = "bwa_mapped/{sample}.bam.bai"
     output:
-        bam = "dedup_bam/{sample}.bam"
+        bam = "dedup_bam/{sample}.bam",
+        stats = "QC/umi_dedup/{sample}_per_umi.tsv"
     params:
-        mapq = min_mapq
+        mapq = min_mapq,
+        sample = "{sample}"
     log:
         out = "logs/umi_dedup_{sample}.out",
         err = "logs/umi_dedup_{sample}.err"
@@ -14,6 +21,8 @@ rule umi_dedup:
     shell:
         "umi_tools dedup --mapping-quality {params.mapq} \
         --per-cell --umi-tag=RX --cell-tag=BC --extract-umi-method=tag \
+        --method unique --spliced-is-unique --soft-clip-threshold 2 \
+        --output-stats=QC/umi_dedup/{params.sample} \
         -I {input.bam} -L {log.out} > {output.bam} 2> {log.err}"
 # --paired --unmapped-reads use
 
