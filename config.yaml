@@ -24,10 +24,12 @@ genomeSize: 2652783500
 # context to select to create bed files (empty means consider all contexts)
 bedContext:
 # bin size to count CpG methylation/ChIC-fragments (result is bins*cells matrix)
-binSize: 1000
+binSize:
 # Does the sample contain lambda phage as methylation control
 lambda_phage: True
 # minimum mapq threshold to extract signal from
 min_mapq:
 # which protocol? (options: 'nla-taps', 'chic-taps', 'chic')
 method:
+# also count reads on genes/regions?
+countRegions:

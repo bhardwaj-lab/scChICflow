@@ -157,6 +157,26 @@ def parse_args(defaults=None):
                           help="minimum mapping quality (filter to apply after mapping). (default: '%(default)s')",
                           default=10)
 
+    parser.add_argument("-cr", "--countRegions",
+                          dest="countRegions",
+                          help="Output a file with UMI counts per barcode in a specified region (see options). (default: '%(default)s')",
+                          choices=['genes', 'windows', 'bed', 'peaks', None],
+                          default="genes")
+
+    parser.add_argument("-bs", "--binSize",
+                          dest="binSize",
+                          help="Size of the bins to count UMIs per barcode (used only if --countRegions 'windows' is used) (default: '%(default)s')",
+                          type=str,
+                          required=False,
+                          default=10000)
+
+    parser.add_argument("-b", "--bedFile",
+                          dest="bedFile",
+                          help="BED file to count regions in (used only if --countRegions 'bed' is used) (default: '%(default)s')",
+                          type=str,
+                          required=False,
+                          default=None)
+
     parser.add_argument("-s", "--snakemakeOptions",
                           dest="snakemakeOptions",
                           metavar="STR",
@@ -202,6 +222,11 @@ def main():
     parser = parse_args()
     args = parser.parse_args()
     args.outdir = os.path.abspath(args.outdir)
+    # check if the bed file is given with --countRegions argument
+    if args.countRegions == "bed":
+        if not os.path.exists(args.bedFile) and os.path.getsize(args.bedFile) > 0:
+            exit("counting regions bed file absent/empty!!")
+
     # Handle YAML and log files
     snakemake_cmd = commonYAMLandLogs(baseDir, args, __file__)
     # Run everything

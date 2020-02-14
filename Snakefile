@@ -54,6 +54,8 @@ if method in ['chic-taps', 'nla-taps']:
 if method in ['chic-taps', 'chic']:
     include: os.path.join(workflow.basedir, "rules", "dedup_and_qc.snakefile")
     include: os.path.join(workflow.basedir, "rules", "peakcall.snakefile")
+    if countRegions:
+        include: os.path.join(workflow.basedir, "rules", "counting.snakefile")
 
 include: os.path.join(workflow.basedir, "rules", "QC.snakefile")
 
@@ -65,6 +67,13 @@ def run_Trimming(trim):
         expand("FASTQ_trimmed/{sample}{read}.fastq.gz", sample = samples, read = reads),
         expand("QC/FastQC_trimmed/{sample}{read}_fastqc.html", sample = samples, read = reads)
         ]
+        return(file_list)
+    else:
+        return([])
+
+def count_regions():
+    if countRegions is not None:
+        file_list = expand("counts/{sample}."+countRegions+"_per_barcode.tsv", sample = samples)
         return(file_list)
     else:
         return([])
@@ -99,8 +108,8 @@ def meth_check(type=method):
         "QC/featureEnrichment.png",
         "QC/featureEnrichment_biotype.png",
         expand("counts/{sample}.per_barcode.tsv", sample = samples),
-        expand("counts/{sample}.windows_total.tsv", sample = samples),
-        expand("counts/{sample}.windows_per_barcode.tsv", sample = samples),
+#        expand("counts/{sample}.windows_total.tsv", sample = samples),
+#        expand("counts/{sample}.windows_per_barcode.tsv", sample = samples),
         expand("macs2_peaks/{sample}_peaks.narrowPeak", sample = samples),
         expand("macs2_peaks/{sample}_peaks.bed", sample = samples),
         ])
@@ -108,8 +117,8 @@ def meth_check(type=method):
             file_list.extend(["QC/bwSummary_10kBins.npz",
                             "QC/cor-spearman_10kBins.png"])
 
-    if type == 'chic-taps':
-        file_list.extend([expand("counts/{sample}_peaks.csv", sample = samples)])
+#    if type == 'chic-taps':
+#        file_list.extend([expand("counts/{sample}_peaks.csv", sample = samples)])
     return(file_list)
 
 ### main rule ##################################################################
@@ -123,6 +132,7 @@ rule all:
         expand("bwa_mapped/{sample}.bam", sample = samples),
         expand("bwa_mapped/{sample}.bam.bai", sample = samples),
         meth_check(),
+        count_regions(),
         "QC/multiqc_report.html"
 
 
