@@ -161,7 +161,7 @@ def parse_args(defaults=None):
                           dest="countRegions",
                           help="Output a file with UMI counts per barcode in a specified region (see options). (default: '%(default)s')",
                           choices=['genes', 'windows', 'bed', 'peaks', None],
-                          default="genes")
+                          default=None)
 
     parser.add_argument("-bs", "--binSize",
                           dest="binSize",
