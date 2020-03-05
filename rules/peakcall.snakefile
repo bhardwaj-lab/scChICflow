@@ -25,7 +25,18 @@ rule macs2_bed:
     conda: CONDA_SHARED_ENV
     shell:
         """
-        awk 'FS="\t" {{ if ($9 >= {params.qvalue}) {{print $1,$2,$3,$4,$5,$6}} }}' {input} > {output}
+        awk 'OFS="\\t" {{ if ($9 >= {params.qvalue}) {{print $1,$2,$3,$4,$5,$6}} }}' {input} > {output}
+        """
+
+rule macs2_bed_union:
+    input: expand("macs2_peaks/{sample}_peaks.bed", sample = samples)
+    output: "macs2_peaks/peaks_union.bed"
+    threads: 1
+    conda: CONDA_SHARED_ENV
+    shell:
+        """
+        cat {input} | sort -k1,1 -k2n,2 | \
+        bedtools merge -c 4,5,6 -o collapse,mean,distinct -i - > {output}
         """
 
 #if method == 'chic-taps':

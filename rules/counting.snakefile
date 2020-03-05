@@ -17,7 +17,7 @@ if countRegions == "windows":
 
 elif countRegions == "bed" or countRegions == "peaks":
     rule make_regions:
-        input: lambda wildcards: bedFile if countRegions == "bed" else "macs2_peaks/{sample}_peaks.bed"
+        input: lambda wildcards: bedFile if countRegions == "bed" else "macs2_peaks/peaks_union.bed"
         output: temp("counts/counting_regions.saf")
         threads: 1
         conda: CONDA_SHARED_ENV
