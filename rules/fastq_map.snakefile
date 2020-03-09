@@ -81,7 +81,7 @@ if trim:
         threads: 8
         conda: CONDA_SHARED_ENV
         shell:
-            "cutadapt -j {threads} -e 0.1 -O 5 \
+            "cutadapt -j {threads} -e 0.1 -O 5 -u 1 -u -2 -U -2 \
             -b TGGAATTCTCGGGTGCCAAGG -B TGGAATTCTCGGGTGCCAAGG \
             -b ATCTCGTATGCCGTCTTCTGCTTG -B ATCTCGTATGCCGTCTTCTGCTTG \
             -b GTTCAGAGTTCTACAGTCCGACGATC -B GTTCAGAGTTCTACAGTCCGACGATC \
