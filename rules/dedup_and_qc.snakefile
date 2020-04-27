@@ -12,7 +12,8 @@ rule umi_dedup:
         stats = "QC/umi_dedup/{sample}_per_umi.tsv"
     params:
         mapq = min_mapq,
-        sample = "{sample}"
+        sample = "{sample}",
+        tmp = tempDir
     log:
         out = "logs/umi_dedup_{sample}.out",
         err = "logs/umi_dedup_{sample}.err"
@@ -23,6 +24,7 @@ rule umi_dedup:
         --per-cell --umi-tag=RX --cell-tag=BC --extract-umi-method=tag \
         --method unique --spliced-is-unique --soft-clip-threshold 2 \
         --output-stats=QC/umi_dedup/{params.sample} \
+        --temp-dir={params.tmp} \
         -I {input.bam} -L {log.out} > {output.bam} 2> {log.err}"
 # --paired --unmapped-reads use
 
