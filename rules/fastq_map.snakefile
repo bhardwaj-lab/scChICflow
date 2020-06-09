@@ -85,7 +85,7 @@ if trim:
             -b TGGAATTCTCGGGTGCCAAGG -B TGGAATTCTCGGGTGCCAAGG \
             -b ATCTCGTATGCCGTCTTCTGCTTG -B ATCTCGTATGCCGTCTTCTGCTTG \
             -b GTTCAGAGTTCTACAGTCCGACGATC -B GTTCAGAGTTCTACAGTCCGACGATC \
-            --nextseq-trim=16 {params.opts} \
+            --nextseq-trim=30 {params.opts} \
             -o {output.r1} -p {output.r2} {input.r1} {input.r2} > {log.out} 2> {log.err}"
 
     rule FastQC_trimmed:
@@ -121,18 +121,21 @@ rule bwa_map:
         idx = bwa_index
     output: "bwa_mapped/{sample}.bam"
     params:
-        sample = '{sample}'
+        sample = '{sample}',
+        mapq = min_mapq
     log:
         out = "logs/bwa_map_{sample}.out",
         err = "logs/bwa_map_{sample}.err"
     threads: 10
     conda: CONDA_SHARED_ENV
     shell:
-        """bwa mem -t {threads} {input.idx} {input.r1} {input.r2} |\
+        """
+        bwa mem -T {params.mapq} -t {threads} {input.idx} {input.r1} {input.r2} |\
         samtools view -F 4 -h | awk -v sample={params.sample} \
         'OFS="\\t" {{ if($0 ~ "^@") {{print $0}} else \
         {{ split($1,a,"_"); print a[1]";BC:Z:"a[2]";RX:Z:"a[3], $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, "SM:Z:"sample"_"a[2], "BC:Z:"a[2], "RX:Z:"a[3], "MI:Z:"a[2]a[3] }} }}' |\
-        samtools sort -@ {threads} -T {params.sample} -o {output} > {log.out} 2> {log.err}"""
+        samtools sort -@ {threads} -T {params.sample} -o {output} > {log.out} 2> {log.err}
+        """
 
 rule bwa_index:
     input: "bwa_mapped/{sample}.bam"
