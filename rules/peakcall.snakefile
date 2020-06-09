@@ -68,5 +68,5 @@ rule countFrags_perCell:
         """
         samtools view {input.bam} | grep -o "BC:Z:[ATGC]*" | \
         sed 's/BC:Z://' | sort | uniq -c | \
-        awk 'OFS="\t" {{ print $2, $1 }}' > {output} 2> {log}
+        awk 'OFS="\\t" {{ print $2, $1 }}' > {output} 2> {log}
         """
