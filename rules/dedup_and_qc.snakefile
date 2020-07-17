@@ -69,7 +69,7 @@ rule bamCoverage_dedup:
     threads: 10
     conda: CONDA_SHARED_ENV
     shell:
-        "bamCoverage --normalizeUsing CPM -p {threads} \
+        "bamCoverage --normalizeUsing CPM -bs 100 -p {threads} \
         -ignore {params.ignore} -bl {input.blacklist} \
         -b {input.bam} -o {output} > {log} 2>&1"
 
@@ -85,7 +85,7 @@ rule plotEnrichment:
     conda: CONDA_SHARED_ENV
     shell:
         "plotEnrichment -p {threads} --BED {input.gtf} -bl {input.bl} \
-        --smartLabels -b {input.bam} -o {output}  > {log} 2>&1"
+        --smartLabels --variableScales --perSample -b {input.bam} -o {output}  > {log} 2>&1"
 
 rule plotEnrichment_biotype:
     input:
@@ -99,7 +99,7 @@ rule plotEnrichment_biotype:
     conda: CONDA_SHARED_ENV
     shell:
         "plotEnrichment -p {threads} --BED {input.gtf} -bl {input.bl} \
-        --attributeKey 'gene_biotype' --smartLabels \
+        --attributeKey 'gene_biotype' --smartLabels --variableScales --perSample \
         -b {input.bam} -o {output}  > {log} 2>&1"
 
 rule bwSummary:
