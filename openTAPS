@@ -8,6 +8,7 @@ usage example:
 
 import argparse
 import os
+import re
 import sys
 import textwrap
 import yaml
@@ -45,6 +46,12 @@ def commonYAMLandLogs(baseDir, args, callingScript):
 
     ## load cluster config
     cluster_config = load_configfile(os.path.join(baseDir, "cluster_config.yaml"))
+    ## add log Directory
+    if re.search("\\{cluster_logDir\\}", cluster_config["cluster_cmd"]):
+        os.makedirs(os.path.join(args.outdir, cluster_config["cluster_logDir"]), exist_ok=True)
+        cluster_config["cluster_cmd"] = re.sub("\\{cluster_logDir\\}", cluster_config["cluster_logDir"], cluster_config["cluster_cmd"])
+    else:
+        sys.exit("\nPlease provide a key 'cluster_logDir' and value in the cluster configuration file!\n")
 
     snakemake_cmd = """
                     TMPDIR={tempDir} PYTHONNOUSERSITE=True snakemake {snakemakeOptions} --directory {workingdir} --snakefile {snakefile} \
