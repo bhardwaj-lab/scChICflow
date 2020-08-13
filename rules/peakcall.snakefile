@@ -66,7 +66,7 @@ rule countFrags_perCell:
     conda: CONDA_SHARED_ENV
     shell:
         """
-        samtools view {input.bam} | grep -o "BC:Z:[ATGC]*" | \
-        sed 's/BC:Z://' | sort | uniq -c | \
+        samtools view {input.bam} | grep -o "[[:space:]]BC:Z:[ATGC]*" | \
+        sed 's/[[:space:]]BC:Z://' | sort | uniq -c | \
         awk 'OFS="\\t" {{ print $2, $1 }}' > {output} 2> {log}
         """
