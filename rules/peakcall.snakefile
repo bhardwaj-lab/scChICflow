@@ -54,19 +54,3 @@ rule macs2_bed_union:
 #            "bamToCountTable.py -o {output} -bedfile {input.peak} \
 #            -minMQ {params.min_mq} --dedup --filterXA -sampleTags SM \
 #            -joinedFeatureTags reference_name {input.bam}"
-
-## count deduplicated reads per cell
-rule countFrags_perCell:
-    input:
-        bam = "dedup_bam/{sample}.bam",
-        bai = "dedup_bam/{sample}.bam.bai"
-    output: "counts/{sample}.per_barcode.tsv"
-    log: "logs/counts_{sample}.out"
-    threads: 1
-    conda: CONDA_SHARED_ENV
-    shell:
-        """
-        samtools view {input.bam} | grep -o "[[:space:]]BC:Z:[ATGC]*" | \
-        sed 's/[[:space:]]BC:Z://' | sort | uniq -c | \
-        awk 'OFS="\\t" {{ print $2, $1 }}' > {output} 2> {log}
-        """

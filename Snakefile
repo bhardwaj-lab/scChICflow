@@ -133,6 +133,7 @@ rule all:
         expand("bwa_mapped/{sample}.bam.bai", sample = samples),
         meth_check(),
         count_regions(),
+        "QC/plate_plots.pdf",
         "QC/multiqc_report.html"
 
 
