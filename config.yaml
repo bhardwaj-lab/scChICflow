@@ -21,6 +21,8 @@ gtf_file: '/hpc/hub_oudenaarden/vbhardwaj/annotations/hg38_gencode31_extra/annot
 blacklist_bed: "/hpc/hub_oudenaarden/vbhardwaj/annotations/blacklists/hg38-blacklist.v2.bed"
 # genome size (for MACS2 peak calling)
 genomeSize: 2913022398
+# two bit file for scFIlterStats (TA-filter)
+genome2bit:
 # context to select to create bed files (empty means consider all contexts)
 bedContext:
 # bin size to count CpG methylation/ChIC-fragments (result is bins*cells matrix)

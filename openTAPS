@@ -69,7 +69,7 @@ def commonYAMLandLogs(baseDir, args, callingScript):
 
     if args.cluster:
         ## always --use-conda on cluster
-        snakemake_cmd += ["--use-conda"]
+        snakemake_cmd += ["--use-conda"]# --conda-frontend mamba
         snakemake_cmd += ["--conda-prefix " + args.conda_dir]
         snakemake_cmd += ["--cluster-config",
                           os.path.join(baseDir, "cluster_config.yaml"),

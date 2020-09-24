@@ -134,6 +134,7 @@ rule all:
         meth_check(),
         count_regions(),
         "QC/plate_plots.pdf",
+        "QC/scFilterStats.txt",
         "QC/multiqc_report.html"
 
 
