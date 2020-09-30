@@ -67,7 +67,7 @@ rule scFilterStats:
         blk = blacklist_bed
     output: "QC/scFilterStats.txt"
     params:
-        path='~/programs/sincei/bin/scFilterStats.py'
+        path='/hpc/hub_oudenaarden/vbhardwaj/programs/sincei/bin/scFilterStats.py'
     log: "logs/scFilterStats.txt"
     threads: 15
     conda: CONDA_SHARED_ENV
