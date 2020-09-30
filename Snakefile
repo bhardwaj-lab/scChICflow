@@ -36,7 +36,7 @@ def get_sample_names(infiles, ext, reads):
 # update envs
 globals().update(set_condaEnv())
 # load config file
-globals().update(load_configfile(workflow.overwrite_configfile))
+globals().update(load_configfile(workflow.overwrite_configfiles[0]))
 
 ## load samples
 infiles = sorted(glob.glob(os.path.join(indir, '*'+ext)))
@@ -84,7 +84,7 @@ def meth_check(type=method):
         file_list.extend([
         expand("tagged_bam/{sample}.bam", sample = samples),
         #expand("meth_calls/{sample}_methylation.bed.gz", sample = samples),
-        expand("coverage/{sample}.methRatio.bw", sample = samples),
+        #expand("coverage/{sample}.methRatio.bw", sample = samples),
         expand("meth_counts/{sample}_CpG_binCounts.meth.csv", sample = samples),
         expand("meth_counts/{sample}_CpG_binCounts.unmeth.csv", sample = samples),
         expand("QC/scMultiOmics/{sample}_QCplots/ConversionMatrix.conversions.png", sample = samples)
@@ -94,11 +94,11 @@ def meth_check(type=method):
             expand("tagged_bam/lambda_phage/{sample}.bam", sample = samples),
             expand("tagged_bam/lambda_phage/{sample}.bam.bai", sample = samples),
             expand("meth_calls/lambda_phage/{sample}_stats.txt", sample = samples),
-            expand("meth_calls/lambda_phage/{sample}.methRatio.bw", sample = samples),
+            #expand("meth_calls/lambda_phage/{sample}.methRatio.bw", sample = samples),
                             "QC/lambda_stats.txt"])
-        if len(samples) > 1:
-            file_list.extend(["QC/bwSummary_methRatio_10kBins.npz",
-                            "QC/cor-spearman_methRatio_10kBins.png"])
+        #if len(samples) > 1:
+        #    file_list.extend(["QC/bwSummary_methRatio_10kBins.npz",
+        #                    "QC/cor-spearman_methRatio_10kBins.png"])
 
     if type in ['chic', 'chic-taps']:
         file_list.extend([
