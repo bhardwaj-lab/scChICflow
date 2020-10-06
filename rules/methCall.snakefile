@@ -6,23 +6,23 @@ rule taps_tagger:
     output:
         bam = "tagged_bam/{sample}.bam",
         bai = "tagged_bam/{sample}.bam.bai",
-        bed = "meth_calls/{sample}_methylation.bed"
+        #bed = "meth_calls/{sample}_methylation.bed"
     params:
         method = 'chic' if method == 'chic-taps' else 'nla',
         min_mq = min_mapq,
-        #cluster = '--cluster' if cluster else '',
+        cluster = '--cluster' if cluster else '',
         context = '-context '+bedContext if bedContext else ''
     log:
         out = "logs/taps_tagger_{sample}.out",
         err = "logs/taps_tagger_{sample}.err"
     threads: 1
     conda: CONDA_SHARED_ENV
-    shell:#{params.cluster}
-        "tapsTagger.py {params.context} \
+    shell:
+        "tapsTagger.py {params.cluster} {params.context} \
         -ref {input.genome} -method {params.method} -bed {output.bed} \
         -o {output.bam} -min_mq {params.min_mq} {input.bam} \
         > {log.out} 2> {log.err}"
-#--cluster 
+
 ## methylation counts per bin per cell
 rule meth_bincounts:
     input:

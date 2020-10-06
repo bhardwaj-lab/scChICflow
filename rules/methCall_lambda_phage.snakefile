@@ -9,15 +9,15 @@ rule taps_tagger_phage:
         bed = temp("meth_calls/lambda_phage/{sample}_mCpG.bed"),
         stats = "meth_calls/lambda_phage/{sample}_stats.txt"
     params:
-        method = 'chic' if method == 'chic-taps' else 'nla',
+        method = 'nla',# phage reads always have nla adapter
         min_mq = min_mapq,
-        cluster = '--cluster' if cluster else '',
+#        cluster = '--cluster' if cluster else '',
         contig = 'Enterobacteria_phage_lambda_NC_001416.1'
     log: "logs/taps_tagger_phage_{sample}.err"
     threads: 1
     conda: CONDA_SHARED_ENV
     shell:
-        "tapsTagger.py -contig {params.contig} {params.cluster} -context Z \
+        "tapsTagger.py -contig {params.contig} -context Z \
          -ref {input.genome} -method {params.method} -bed {output.bed} \
          -o {output.bam} -min_mq {params.min_mq} {input.bam} \
          > {output.stats} 2> {log}"
