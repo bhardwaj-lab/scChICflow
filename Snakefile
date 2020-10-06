@@ -110,8 +110,8 @@ def meth_check(type=method):
         expand("counts/{sample}.per_barcode.tsv", sample = samples),
 #        expand("counts/{sample}.windows_total.tsv", sample = samples),
 #        expand("counts/{sample}.windows_per_barcode.tsv", sample = samples),
-        expand("macs2_peaks/{sample}_peaks.narrowPeak", sample = samples),
-        expand("macs2_peaks/{sample}_peaks.bed", sample = samples),
+#        expand("macs2_peaks/{sample}_peaks.narrowPeak", sample = samples),
+#        expand("macs2_peaks/{sample}_peaks.bed", sample = samples),
         ])
         if len(samples) > 1:
             file_list.extend(["QC/bwSummary_10kBins.npz",
@@ -123,7 +123,7 @@ def meth_check(type=method):
 
 ### main rule ##################################################################
 ################################################################################
-localrules: FASTQ1, FASTQ2
+localrules: FASTQ1, FASTQ2, taps_tagger, taps_tagger_phage
 rule all:
     input:
         #expand("FASTQ/umi_trimmed/umiTrimmed_{sample}{read}.fastq.gz", sample = samples, read = reads),
