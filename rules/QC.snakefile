@@ -54,9 +54,7 @@ rule plate_plot:
     threads: 1
     conda: CONDA_SHARED_ENV
     shell:
-        """
-        Rscript {params.rscript} {input.barcodes} {params.countdir} {output}
-        """
+        "Rscript {params.rscript} {input.barcodes} {params.countdir} {output} > {log}"
 
 rule scFilterStats:
     input:
@@ -68,10 +66,10 @@ rule scFilterStats:
     output: "QC/scFilterStats.txt"
     params:
         path='/hpc/hub_oudenaarden/vbhardwaj/programs/sincei/bin/scFilterStats.py'
-    log: "logs/scFilterStats.txt"
+    log: "logs/scFilterStats.log"
     threads: 15
     conda: CONDA_SHARED_ENV
     shell:
         "{params.path} -n 0 --motifFilter 'A,TA' --minAlignedFraction 0.6 --GCcontentFilter '0.2,0.8' \
         --genome2bit {input.twobit} --barcodes {input.barcodes} -bl {input.blk} \
-        --smartLabels -p {threads} -o {output} -b {input.bams}"
+        --smartLabels -p {threads} -o {output} -b {input.bams} > {log} 2>&1"
