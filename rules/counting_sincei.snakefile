@@ -12,17 +12,17 @@ if countRegions == "windows":
         params:
             bin = binSize,
             prefix = "counts/scCounts_"+binSize+"bp_bins"
-        log: "logs/featurecounts_{sample}_bulk.err"
+        log: "logs/sincei_count_windows.err"
         threads: 10
         conda: CONDA_SHARED_ENV
         shell:
-            "~/programs/scDeepTools/bin/scCountReads.py bins \
+            "~/programs/sincei/bin/scCountReads.py bins \
             --minAlignedFraction 0.6 --GCcontentFilter '0.2,0.8' \
-            --barcodes {params.barcodes} \
-            -bl {params.blk} \
+            --barcodes {input.barcodes} \
+            -bl {input.blk} \
             -b {input.bam} \
             --smartLabels -p {threads} -bs {params.bin} --outFileFormat mtx \
-            -o {params.prefix} {input.bam} > {log} 2>&1"
+            -o {params.prefix} -b {input.bam} > {log} 2>&1"
 
 elif countRegions == "bed" or countRegions == "peaks":
     rule count_regions:
@@ -39,18 +39,18 @@ elif countRegions == "bed" or countRegions == "peaks":
         params:
             bin = binSize,
             prefix = "counts/scCounts_"+countRegions
-        log: "logs/featurecounts_{sample}_bulk.err"
+        log: "logs/sincei_count_bed.err"
         threads: 10
         conda: CONDA_SHARED_ENV
         shell:
-            "~/programs/scDeepTools/bin/scCountReads.py BED-file \
+            "~/programs/sincei/bin/scCountReads.py BED-file \
             --BED {input.bed} \
             --minAlignedFraction 0.6 --GCcontentFilter '0.2,0.8' \
-            --barcodes {params.barcodes} \
-            -bl {params.blk} \
+            --barcodes {input.barcodes} \
+            -bl {input.blk} \
             -b {input.bam} \
             --smartLabels -p {threads} -bs {params.bin} --outFileFormat mtx \
-            -o {params.prefix} {input.bam} > {log} 2>&1"
+            -o {params.prefix} -b {input.bam} > {log} 2>&1"
 
 elif countRegions == "genes":
     print("Counting reads in genes per cell")

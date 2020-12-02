@@ -2,15 +2,12 @@ def get_multiqc_input():
     file = [
         expand("QC/FastQC/{sample}{read}_fastqc.html", sample = samples, read=reads),
         expand("QC/flagstat_bwa_{sample}.txt", sample = samples),
-        expand("QC/readfiltering_bwa_{sample}.txt", sample = samples)
+        expand("QC/readfiltering_bwa_{sample}.txt", sample = samples),
+        expand("QC/flagstat_dedup_{sample}.txt", sample = samples),
+        expand("QC/readfiltering_dedup_{sample}.txt", sample = samples)
         ]
     if trim:
         file.append(expand("QC/FastQC_trimmed/{sample}{read}_fastqc.html", sample = samples, read = reads))
-    if method in ['chic', 'chic-taps']:
-        file.append([
-            expand("QC/flagstat_dedup_{sample}.txt", sample = samples),
-            expand("QC/readfiltering_dedup_{sample}.txt", sample = samples)
-            ])
     return(file)
 
 rule multiQC:
@@ -65,7 +62,7 @@ rule scFilterStats:
         blk = blacklist_bed
     output: "QC/scFilterStats.txt"
     params:
-        path='/hpc/hub_oudenaarden/vbhardwaj/programs/sincei/bin/scFilterStats.py'
+        path='~/programs/sincei/bin/scFilterStats.py'
     log: "logs/scFilterStats.log"
     threads: 15
     conda: CONDA_SHARED_ENV
