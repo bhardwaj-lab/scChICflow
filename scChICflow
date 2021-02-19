@@ -42,7 +42,7 @@ def commonYAMLandLogs(baseDir, args, callingScript):
     # save to configs.yaml in outdir
     config = load_configfile(args.config)
     config.update(vars(args))  # This allows modifications of args after handling a user config file to still make it to the YAML given to snakemake!
-    write_configfile(os.path.join(args.outdir, 'openTAPS_config.yaml'), config)
+    write_configfile(os.path.join(args.outdir, 'scChICflow_config.yaml'), config)
 
     ## load cluster config
     cluster_config = load_configfile(os.path.join(baseDir, "cluster_config.yaml"))
@@ -62,14 +62,14 @@ def commonYAMLandLogs(baseDir, args, callingScript):
                                tempDir=args.tempDir,
                                latency_wait=cluster_config["latency_wait"],
                                snakemakeOptions=str(args.snakemakeOptions or ''),
-                               configFile=os.path.join(args.outdir, 'openTAPS_config.yaml')).split()
+                               configFile=os.path.join(args.outdir, 'scChICflow_config.yaml')).split()
 
     if args.verbose:
         snakemake_cmd.append("--printshellcmds")
 
     if args.cluster:
         ## always --use-conda on cluster
-        snakemake_cmd += ["--use-conda"]# --conda-frontend mamba
+        snakemake_cmd += ["--use-conda --conda-frontend mamba"]
         snakemake_cmd += ["--conda-prefix " + args.conda_dir]
         snakemake_cmd += ["--cluster-config",
                           os.path.join(baseDir, "cluster_config.yaml"),
@@ -87,7 +87,7 @@ def runAndCleanup(args, cmd):
         print("\n{}\n".format(cmd))
 
     # write log file
-    f = open(os.path.join(args.outdir, "openTAPS.log"), "w")
+    f = open(os.path.join(args.outdir, "scChICflow.log"), "w")
     f.write(" ".join(sys.argv) + "\n\n")
     f.write(cmd + "\n\n")
 

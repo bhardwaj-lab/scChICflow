@@ -62,11 +62,12 @@ rule scFilterStats:
         blk = blacklist_bed
     output: "QC/scFilterStats.txt"
     params:
-        path='~/programs/sincei/bin/scFilterStats.py'
+        path='~/programs/sincei/bin'
     log: "logs/scFilterStats.log"
     threads: 15
     conda: CONDA_SHARED_ENV
     shell:
-        "{params.path} -n 0 --motifFilter 'A,TA' --minAlignedFraction 0.6 --GCcontentFilter '0.2,0.8' \
+        "{params.path}/scFilterStats.py -n 0 --motifFilter 'A,TA' \
+        --minAlignedFraction 0.6 --GCcontentFilter '0.2,0.8' \
         --genome2bit {input.twobit} --barcodes {input.barcodes} -bl {input.blk} \
         --smartLabels -p {threads} -o {output} -b {input.bams} > {log} 2>&1"
