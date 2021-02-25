@@ -5,8 +5,8 @@
 
 rule umi_dedup:
     input:
-        bam = "bwa_mapped/{sample}.bam",
-        idx = "bwa_mapped/{sample}.bam.bai"
+        bam = "mapped_bam/{sample}.bam",
+        idx = "mapped_bam/{sample}.bam.bai"
     output:
         bam = "dedup_bam/{sample}.bam",
         stats = "QC/umi_dedup/{sample}_per_umi.tsv"

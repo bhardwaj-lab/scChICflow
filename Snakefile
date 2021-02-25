@@ -93,8 +93,8 @@ rule all:
     input:
         run_Trimming(trim),
         expand("QC/FastQC/{sample}{read}_fastqc.html", sample = samples, read=reads),
-        expand("bwa_mapped/{sample}.bam", sample = samples),
-        expand("bwa_mapped/{sample}.bam.bai", sample = samples),
+        expand("mapped_bam/{sample}.bam", sample = samples),
+        expand("mapped_bam/{sample}.bam.bai", sample = samples),
         meth_check(),
         count_regions(),
         "QC/plate_plots.pdf",

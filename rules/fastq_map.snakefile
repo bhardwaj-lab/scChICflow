@@ -119,7 +119,7 @@ rule bwa_map:
         r1 = lambda wildcards: "FASTQ_trimmed/{sample}"+reads[0]+".fastq.gz" if trim else "FASTQ/umi_trimmed/umiTrimmed_{sample}"+reads[0]+".fastq.gz",
         r2 = lambda wildcards: "FASTQ_trimmed/{sample}"+reads[1]+".fastq.gz" if trim else "FASTQ/umi_trimmed/umiTrimmed_{sample}"+reads[1]+".fastq.gz",
         idx = bwa_index
-    output: "bwa_mapped/{sample}.bam"
+    output: "mapped_bam/{sample}.bam"
     params:
         sample = '{sample}',
         mapq = min_mapq,
@@ -139,13 +139,13 @@ rule bwa_map:
         """
 
 rule bwa_index:
-    input: "bwa_mapped/{sample}.bam"
-    output: "bwa_mapped/{sample}.bam.bai"
+    input: "mapped_bam/{sample}.bam"
+    output: "mapped_bam/{sample}.bam.bai"
     conda: CONDA_SHARED_ENV
     shell: "samtools index {input}"
 
 rule flagstat_bwa:
-    input: "bwa_mapped/{sample}.bam"
+    input: "mapped_bam/{sample}.bam"
     output: "QC/flagstat_bwa_{sample}.txt"
     threads: 1
     conda: CONDA_SHARED_ENV
@@ -154,8 +154,8 @@ rule flagstat_bwa:
 ## get some stats
 rule readfiltering_bwa:
     input:
-        bam = "bwa_mapped/{sample}.bam",
-        bai = "bwa_mapped/{sample}.bam.bai",
+        bam = "mapped_bam/{sample}.bam",
+        bai = "mapped_bam/{sample}.bam.bai",
         blacklist = blacklist_bed
     output: "QC/readfiltering_bwa_{sample}.txt"
     params:
