@@ -132,7 +132,7 @@ filter_cmd = """
 if protocol == "chic":
     mapping_cmd = "bwa mem -v 1 -T {params.mapq} -t {threads} {input.idx} {input.r1} {input.r2} 2> {log.err} |\ " + filter_cmd
 else:
-    mapping_cmd = "hisat2 --sensitive --no-spliced-alignment --no-mixed --no-discordant --no-softclip -X 1000 -x {input.idx} -1 {input.r1} -2 {input.r2} 2> {log.err} |\ " + filter_cmd
+    mapping_cmd = "hisat2 --sensitive --no-spliced-alignment --no-mixed --no-discordant --no-softclip -X 1000 -x {params.idx} -1 {input.r1} -2 {input.r2} 2> {log.err} |\ " + filter_cmd
 
 rule bam_map:
     input:
@@ -143,7 +143,8 @@ rule bam_map:
     params:
         sample = '{sample}',
         mapq = min_mapq,
-        samfilter='-F 4 -F 256'
+        samfilter='-F 4 -F 256',
+        idx = "" if protocol == "chic" else hisat2_index
     log:
         out = "logs/bwa_map_{sample}.out",
         err = "logs/bwa_map_{sample}.err"
