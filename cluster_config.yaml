@@ -5,5 +5,5 @@ latency_wait: 300
 cluster_logDir: cluster_logs
 __default__:
     memory: 2G
-bwa_map:
-    memory: 4G
+bam_map:
+    memory: 8G
