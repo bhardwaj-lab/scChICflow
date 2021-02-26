@@ -6,4 +6,4 @@ cluster_logDir: cluster_logs
 __default__:
     memory: 2G
 bam_map:
-    memory: 8G
+    memory: 20G

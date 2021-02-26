@@ -13,20 +13,20 @@ rule umi_dedup:
     params:
         mapq = min_mapq,
         sample = "{sample}",
-        tmp = tempDir
+        tmp = tempDir,
+        paired = "" if protocol == "chic" else "--paired --unmapped-reads use"
     log:
         out = "logs/umi_dedup_{sample}.out",
         err = "logs/umi_dedup_{sample}.err"
     threads: 1
     conda: CONDA_SHARED_ENV
     shell:
-        "umi_tools dedup --mapping-quality {params.mapq} \
+        "umi_tools dedup {params.paired} --mapping-quality {params.mapq} \
         --per-cell --umi-tag=RX --cell-tag=BC --extract-umi-method=tag \
         --method unique --spliced-is-unique --soft-clip-threshold 2 \
         --output-stats=QC/umi_dedup/{params.sample} \
         --temp-dir={params.tmp} \
         -I {input.bam} -L {log.out} > {output.bam} 2> {log.err}"
-# --paired --unmapped-reads use
 
 rule index_dedup:
     input: "dedup_bam/{sample}.bam"
