@@ -31,3 +31,5 @@ binSize:
 min_mapq:
 # also count reads on genes/regions?
 countRegions:
+# protocol (chic or tchic?)
+protocol:
