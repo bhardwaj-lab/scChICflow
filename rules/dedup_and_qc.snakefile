@@ -14,7 +14,7 @@ rule umi_dedup:
         mapq = min_mapq,
         sample = "{sample}",
         tmp = tempDir,
-        paired = "--paired --unmapped-reads use" if protocol == "tchic" else ""
+#        paired = "--paired --unmapped-reads use" if protocol == "tchic" else ""
     log:
         out = "logs/umi_dedup_{sample}.out",
         err = "logs/umi_dedup_{sample}.err"
