@@ -21,7 +21,7 @@ rule umi_dedup:
     threads: 1
     conda: CONDA_SHARED_ENV
     shell:
-        "umi_tools dedup {params.paired} --mapping-quality {params.mapq} \
+        "umi_tools dedup --mapping-quality {params.mapq} \
         --per-cell --umi-tag=RX --cell-tag=BC --extract-umi-method=tag \
         --method unique --spliced-is-unique --soft-clip-threshold 2 \
         --output-stats=QC/umi_dedup/{params.sample} \
