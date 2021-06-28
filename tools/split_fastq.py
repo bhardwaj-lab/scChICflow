@@ -37,10 +37,10 @@ with open(nlaBC, 'r') as f:
     nla.extend(f.read().splitlines())
 cs2 = [x.split('\t')[0] for x in open(celseqBC, 'r').readlines()]
 
-nl=open(prefix+'NLA.txt', 'w')
-cs=open(prefix+'CS2.txt', 'w')
-both=open(prefix+'BOTH.txt', 'w')
-none=open(prefix+'NONE.txt', 'w')
+nl=open(prefix+'.NLA.txt', 'w')
+cs=open(prefix+'.CS2.txt', 'w')
+both=open(prefix+'.BOTH.txt', 'w')
+none=open(prefix+'.NONE.txt', 'w')
 
 for read in pyfastx.Fastq(infile):
     try:

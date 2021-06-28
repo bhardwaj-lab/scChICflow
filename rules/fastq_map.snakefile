@@ -1,18 +1,3 @@
-rule FASTQ1:
-      input:
-          indir+"/{sample}"+reads[0]+ext
-      output:
-          "FASTQ/{sample}"+reads[0]+".fastq.gz"
-      shell:
-          "( [ -f {output} ] || ln -s -r {input} {output} )"
-
-rule FASTQ2:
-      input:
-          indir+"/{sample}"+reads[1]+ext
-      output:
-          "FASTQ/{sample}"+reads[1]+".fastq.gz"
-      shell:
-          "( [ -f {output} ] || ln -s -r {input} {output} )"
 
 rule FastQC:
     input:
@@ -170,13 +155,13 @@ rule flagstat_bam:
 rule readfiltering_bam:
     input:
         bam = "mapped_bam/{sample}.bam",
-        bai = "mapped_bam/{sample}.bam.bai",
-        blacklist = blacklist_bed
+        bai = "mapped_bam/{sample}.bam.bai"
     output: "QC/readfiltering_bwa_{sample}.txt"
     params:
-        mapq = min_mapq
+        mapq = min_mapq,
+        blacklist = "-bl " + blacklist_bed if blacklist_bed else ""
     threads: 10
     conda: CONDA_SHARED_ENV
     shell:
         "estimateReadFiltering -p {threads} --minMappingQuality {params.mapq} --samFlagInclude 64 \
-        -bl {input.blacklist} -b {input.bam} > {output}"
+        {params.blacklist} -b {input.bam} > {output}"

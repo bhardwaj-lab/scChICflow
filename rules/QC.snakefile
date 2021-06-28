@@ -58,16 +58,16 @@ rule scFilterStats:
         bams = expand("dedup_bam/{sample}.bam", sample = samples),
         bai = expand("dedup_bam/{sample}.bam.bai", sample = samples),
         twobit = genome2bit,
-        barcodes = barcode_list,
-        blk = blacklist_bed
+        barcodes = barcode_list
     output: "QC/scFilterStats.txt"
     params:
-        path='~/programs/sincei/bin'
+        path='~/programs/sincei/bin',
+        blacklist = "-bl " + blacklist_bed if blacklist_bed else ""
     log: "logs/scFilterStats.log"
     threads: 15
     conda: CONDA_SHARED_ENV
     shell:
         "{params.path}/scFilterStats.py -n 0 --motifFilter 'A,TA' \
         --minAlignedFraction 0.6 --GCcontentFilter '0.2,0.8' \
-        --genome2bit {input.twobit} --barcodes {input.barcodes} -bl {input.blk} \
+        --genome2bit {input.twobit} --barcodes {input.barcodes} {params.blacklist} \
         --smartLabels -p {threads} -o {output} -b {input.bams} > {log} 2>&1"

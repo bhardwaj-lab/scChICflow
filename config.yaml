@@ -33,3 +33,5 @@ min_mapq:
 countRegions:
 # protocol (chic or tchic?)
 protocol:
+# if protocol is tchic, provide CS2 cell barcodes
+barcodes_cs2:
