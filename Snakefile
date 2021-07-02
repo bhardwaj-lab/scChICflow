@@ -89,7 +89,7 @@ def meth_check():
 
 ### main rule ##################################################################
 ################################################################################
-localrules: FASTQ1, FASTQ2
+#localrules: FASTQ#1, FASTQ2
 rule all:
     input:
         run_Trimming(trim),
