@@ -4,6 +4,8 @@ cluster_cmd: /hpc/hub_oudenaarden/vbhardwaj/programs/myScripts/SlurmEasy --mem-p
 latency_wait: 300
 cluster_logDir: cluster_logs
 __default__:
-    memory: 2G
+    memory: 4G
 bam_map:
     memory: 20G
+split_tChIC:
+    memory: 60G

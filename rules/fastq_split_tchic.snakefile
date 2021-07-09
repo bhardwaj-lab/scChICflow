@@ -16,8 +16,10 @@ else:
             nla=barcode_list,
             cs2=barcodes_cs2
         output:
-            cs2=temp("{sample}.CS2.txt"),
-            nla=temp("{sample}.NLA.txt")
+            cs2="{sample}.CS2.txt",
+            nla=temp("{sample}.NLA.txt"),
+            both=temp("{sample}.BOTH.txt"),
+            none=temp("{sample}.NONE.txt")
         params:
             script = os.path.join(workflow.basedir, "tools", "split_fastq.py"),
             prefix="{sample}"
