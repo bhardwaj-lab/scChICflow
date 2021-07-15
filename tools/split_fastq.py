@@ -93,13 +93,13 @@ def run(infile, nla_bc, celseq_bc, prefix, ncpus):
     nl.close()
     bo.close()
     no.close()
-    ## write results
-#    for n in ['CS2', 'NLA', 'BOTH', 'NONE']:
-#        li = out[n]
-#        with open(prefix+'.'+n+'.txt', 'w') as f:
-#            for l in li:
-#                f.write(l+'\n')
-#        f.close()
+
+    ## count results
+    for n in ['.CS2', '.NLA', '.BOTH', '.NONE']:
+        with open(prefix+n+".txt", "r",encoding="utf-8",errors='ignore') as f:
+            c=sum(bl.count("\n") for bl in blocks(f))
+            print('{}_{}: {}'.format(prefix, n, c))
+        f.close()
 
 if __name__ == "__main__":
     run()
