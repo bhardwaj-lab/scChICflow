@@ -23,10 +23,11 @@ else:
         params:
             script = os.path.join(workflow.basedir, "tools", "split_fastq.py"),
             prefix="{sample}"
+        log: "logs/{sample}_split_tChIC.log"
         threads: 10
         shell:
             "{params.script} --ncpus={threads} --infile={input.r1} --prefix={params.prefix} \
-            --nla_bc={input.nla} --celseq_bc={input.cs2}"
+            --nla_bc={input.nla} --celseq_bc={input.cs2} > {log} 2>&1"
 
     rule split_fastq_dna:
         input:
