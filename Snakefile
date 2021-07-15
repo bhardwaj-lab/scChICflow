@@ -55,6 +55,13 @@ if countRegions:
 
 ### conditional/optional rules #################################################
 ################################################################################
+def run_tchic_fastq(protocol):
+    if protocol=='tchic':
+        file_list = [expand("FASTQ_RNA/{sample}{read}.fastq.gz", sample = samples, read = reads)]
+        return(file_list)
+    else:
+        return([])
+
 def run_Trimming(trim):
     if trim:
         file_list = [
@@ -92,6 +99,7 @@ def meth_check():
 #localrules: FASTQ#1, FASTQ2
 rule all:
     input:
+        run_tchic_fastq(protocol),
         run_Trimming(trim),
         expand("QC/FastQC/{sample}{read}_fastqc.html", sample = samples, read=reads),
         expand("mapped_bam/{sample}.bam", sample = samples),
