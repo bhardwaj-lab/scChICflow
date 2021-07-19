@@ -7,29 +7,13 @@ from Bio.SeqIO.QualityIO import FastqGeneralIterator
 from Bio.Seq import Seq
 from splitfastq import *
 from functools import partial
-import tempfile
-
-def getTempFileName(pre, suf):
-    _tempFile = tempfile.NamedTemporaryFile(prefix=pre,
-                                            suffix=suf,
-                                            delete=False)
-
-    memFileName = _tempFile.name
-    _tempFile.close()
-    return memFileName
 
 def process_reads(handle, fh_prefix, nla, cs2):
     read, seq = handle
-    cs_name=fh_prefix+'.CS2.txt'
-    nl_name=fh_prefix+'.NLA.txt'
-    bo_name=fh_prefix+'.BOTH.txt'
-    no_name=fh_prefix+'.NONE.txt'
-
-    cs=open(cs_name, 'a')
-    nl=open(nl_name, 'a')
-    bo=open(bo_name, 'a')
-    no=open(no_name, 'a')
-
+    cs=[]
+    nl=[]
+    bo=[]
+    no=[]
     try:
         seq=seq[0:25]
         seq_one=seq[0:12]
@@ -52,15 +36,15 @@ def process_reads(handle, fh_prefix, nla, cs2):
         csStat_final = False
 
     if nlaStat_final is True and csStat_final is True:
-        bo.write(read+'\n')
+        bo.append(read)
     elif nlaStat_final is True and csStat_final is False:
-        nl.write(read+'\n')
+        nl.append(read)
     elif nlaStat_final is False and csStat_final is True:
-        cs.write(read+'\n')
+        cs.append(read)
     elif nlaStat_final is False and csStat_final is False:
-        no.write(read+'\n')
+        no.append(read)
 
-    return 0
+    return {'CS2':cs, 'NLA': nl, 'BOTH': bo, 'NONE': no}
 
 @click.command()
 @click.option('--infile')#, type=click.File(mode='r'))
@@ -79,26 +63,17 @@ def run(infile, nla_bc, celseq_bc, prefix, ncpus):
         for rec_id, seq, _ in FastqGeneralIterator(in_handle):
             yield rec_id, str(Seq(seq))
 
-    cs=open(prefix+".CS2.txt", 'w')
-    nl=open(prefix+".NLA.txt", 'w')
-    bo=open(prefix+".BOTH.txt", 'w')
-    no=open(prefix+".NONE.txt", 'w')
-
     func=partial(process_reads, fh_prefix=prefix, nla=nla, cs2=cs2)
     with gzip.open(infile, 'rt') as input_handle:
         p = mp.Pool(processes=int(ncpus))
         g = p.map(func, get_data(input_handle))
-
-    cs.close()
-    nl.close()
-    bo.close()
-    no.close()
-
-    ## count results
-    for n in ['.CS2', '.NLA', '.BOTH', '.NONE']:
-        with open(prefix+n+".txt", "r",encoding="utf-8",errors='ignore') as f:
-            c=sum(bl.count("\n") for bl in blocks(f))
-            print('{}_{}: {}'.format(prefix, n, c))
+    ## combine and print results
+    for n in ['CS2', 'NLA', 'BOTH', 'NONE']:
+        full_list=[x[n] for x in g if x[n]!=[]]
+        print('{}_{}: {}'.format(prefix, n, len(full_list)))
+        with open(prefix+'.'+n+".txt", "w",encoding="utf-8",errors='ignore') as f:
+            for rec in full_list:
+                f.write(rec[0]+'\n')
         f.close()
 
 if __name__ == "__main__":
