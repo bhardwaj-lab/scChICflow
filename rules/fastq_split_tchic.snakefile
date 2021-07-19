@@ -16,7 +16,7 @@ else:
             nla=barcode_list,
             cs2=barcodes_cs2
         output:
-            cs2="{sample}.CS2.txt",
+            cs2=temp("{sample}.CS2.txt"),
             nla=temp("{sample}.NLA.txt"),
             both=temp("{sample}.BOTH.txt"),
             none=temp("{sample}.NONE.txt")
@@ -29,6 +29,9 @@ else:
             "{params.script} --ncpus={threads} --infile={input.r1} --prefix={params.prefix} \
             --nla_bc={input.nla} --celseq_bc={input.cs2} > {log} 2>&1"
 
+    split_cmd="filterbyname.sh -Xmx50g include=t in={input.r1} in2={input.r2} \
+        out={output.r1} out2={output.r2} names={input.names} > {log} 2>&1"
+
     rule split_fastq_dna:
         input:
             r1=indir+"/{sample}"+reads[0]+ext,
@@ -39,8 +42,7 @@ else:
             r2="FASTQ/{sample}"+reads[1]+".fastq.gz"
         log: "logs/{sample}_dnaSplit.log"
         shell:
-            "filterbyname.sh -Xmx50g include=t in={input.r1} in2={input.r2} \
-             out={output.r1} out2={output.r2} names={input.names} > {log} 2>&1"
+            split_cmd
 
     rule split_fastq_rna:
         input:
@@ -52,5 +54,28 @@ else:
             r2="FASTQ_RNA/{sample}"+reads[1]+".fastq.gz"
         log: "logs/{sample}_rnaSplit.log"
         shell:
-            "filterbyname.sh -Xmx50g include=t in={input.r1} in2={input.r2} \
-             out={output.r1} out2={output.r2} names={input.names} > {log} 2>&1"
+            split_cmd
+
+    rule split_fastq_both:
+        input:
+            r1=indir+"/{sample}"+reads[0]+ext,
+            r2=indir+"/{sample}"+reads[1]+ext,
+            names="{sample}.BOTH.txt"
+        output:
+            r1="FASTQ_OTHER/{sample}.BOTH."+reads[0]+".fastq.gz",
+            r2="FASTQ_OTHER/{sample}.BOTH."+reads[1]+".fastq.gz"
+        log: "logs/{sample}_bothSplit.log"
+        shell:
+            split_cmd
+
+    rule split_fastq_none:
+        input:
+            r1=indir+"/{sample}"+reads[0]+ext,
+            r2=indir+"/{sample}"+reads[1]+ext,
+            names="{sample}.NONE.txt"
+        output:
+            r1="FASTQ_OTHER/{sample}.NONE."+reads[0]+".fastq.gz",
+            r2="FASTQ_OTHER/{sample}.NONE."+reads[1]+".fastq.gz"
+        log: "logs/{sample}_noneSplit.log"
+        shell:
+            split_cmd

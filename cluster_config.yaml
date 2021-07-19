@@ -8,4 +8,4 @@ __default__:
 bam_map:
     memory: 20G
 split_tChIC:
-    memory: 60G
+    memory: 20G
