@@ -8,6 +8,8 @@ from Bio.Seq import Seq
 from splitfastq import *
 from functools import partial
 
+# Note: about 1 in 10k reads have NLA+T7promoter and should be classified as CS2
+# instead of NLA (current situation), but I don't want to bother with the extra search time
 def process_reads(handle, fh_prefix, nla, cs2):
     read, seq = handle
     cs=[]
@@ -15,25 +17,32 @@ def process_reads(handle, fh_prefix, nla, cs2):
     bo=[]
     no=[]
     try:
-        seq=seq[0:25]
         seq_one=seq[0:12]
         seq_two=seq[0:14]
-        seq_four=seq[15:50]
+        #seq_three=seq[0:50]
+        seq_four=seq[15:40]
     except UnicodeDecodeError:
         pass
-    ## search for nla/cs2 barcode upto hamming dist of 1
+    # search for nla/cs2 barcode upto hamming dist of 1
     nlaStat = any([search_min_dist(seq_one, b)<=1 for b in nla])
     csStat = any([search_min_dist(seq_two, b)<=1 for b in cs2])
+    # Loook for T7 promoter in the beginning of the fastq if they are CS2+NLA
+    #prom='GCCGGTAATACGACTCACTATAGGGAGTTCTACAGTCCGACGATC'
+    #csStat_extended = search_min_dist(seq_three, prom) <=2
 
     if nlaStat is True and checkGCcontent(seq_four) >=0.3:
         nlaStat_final = True
     else:
-        nlaStat_final = False
+        nlaStat_final = False# this can still be an NLA+CS2+polyA situation
 
-    if csStat is True and checkGCcontent(seq_four) <=0.3:
+    if csStat is True and checkGCcontent(seq_four) <0.3:
         csStat_final = True
+    #elif csStat_extended is True:
+    #    csStat_final = True#NLA+CS2+polyA situation
     else:
         csStat_final = False
+    # if you find NLA+CS2 barcodes one after another, check for GC content and
+    # re-classify them as cs2
 
     if nlaStat_final is True and csStat_final is True:
         bo.append(read)

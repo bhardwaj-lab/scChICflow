@@ -1,10 +1,10 @@
 ## get GC content
 def checkGCcontent(str seq):
-    cdef int total_bases, gc_bases
-    cdef double gc_frac
+    cdef int total_bases
+    cdef double gc_frac, gc_bases
     total_bases = len(seq)
     gc_bases = len([x for x in seq if x == 'C' or x == 'G'])
-    gc_frac = float(gc_bases)/total_bases
+    gc_frac = gc_bases/total_bases
     return gc_frac
 
 ## search matching string and return the position, hamming dist, string
