@@ -1088,6 +1088,12 @@ static int __Pyx_ParseOptionalKeywords(PyObject *kwds, PyObject **argnames[],\
     PyObject *kwds2, PyObject *values[], Py_ssize_t num_pos_args,\
     const char* function_name);
 
+/* PySequenceContains.proto */
+static CYTHON_INLINE int __Pyx_PySequence_ContainsTF(PyObject* item, PyObject* seq, int eq) {
+    int result = PySequence_Contains(seq, item);
+    return unlikely(result < 0) ? result : (result == (eq == Py_EQ));
+}
+
 /* PyObject_GenericGetAttrNoDict.proto */
 #if CYTHON_USE_TYPE_SLOTS && CYTHON_USE_PYTYPE_LOOKUP && PY_VERSION_HEX < 0x03070000
 static CYTHON_INLINE PyObject* __Pyx_PyObject_GenericGetAttrNoDict(PyObject* obj, PyObject* attr_name);
@@ -1308,7 +1314,11 @@ static const char __pyx_k_G[] = "G";
 static const char __pyx_k_d[] = "d";
 static const char __pyx_k_i[] = "i";
 static const char __pyx_k_l[] = "l";
+static const char __pyx_k_s[] = "s";
 static const char __pyx_k_x[] = "x";
+static const char __pyx_k_aa[] = "aa";
+static const char __pyx_k_tt[] = "tt";
+static const char __pyx_k_out[] = "out";
 static const char __pyx_k_seq[] = "seq";
 static const char __pyx_k_sum[] = "sum";
 static const char __pyx_k_zip[] = "zip";
@@ -1329,9 +1339,22 @@ static const char __pyx_k_gc_bases[] = "gc_bases";
 static const char __pyx_k_min_dist[] = "min_dist";
 static const char __pyx_k_Undefined[] = "Undefined";
 static const char __pyx_k_ValueError[] = "ValueError";
+static const char __pyx_k_checkPolyA[] = "checkPolyA";
 static const char __pyx_k_splitfastq[] = "splitfastq";
 static const char __pyx_k_total_bases[] = "total_bases";
+#if PY_MAJOR_VERSION >= 3
+static const char __pyx_k_AAAAAAAAAAAA[] = "AAAAAAAAAAAA";
+#endif
+#if PY_MAJOR_VERSION >= 3
+static const char __pyx_k_TTTTTTTTTTTT[] = "TTTTTTTTTTTT";
+#endif
 static const char __pyx_k_min_substring[] = "min_substring";
+#if PY_MAJOR_VERSION < 3
+static const char __pyx_k_b_AAAAAAAAAAAA[] = "b'AAAAAAAAAAAA'";
+#endif
+#if PY_MAJOR_VERSION < 3
+static const char __pyx_k_b_TTTTTTTTTTTT[] = "b'TTTTTTTTTTTT'";
+#endif
 static const char __pyx_k_checkGCcontent[] = "checkGCcontent";
 static const char __pyx_k_splitfastq_pyx[] = "splitfastq.pyx";
 static const char __pyx_k_search_min_dist[] = "search_min_dist";
@@ -1341,8 +1364,12 @@ static PyObject *__pyx_n_s_C;
 static PyObject *__pyx_n_s_G;
 static PyObject *__pyx_n_s_Undefined;
 static PyObject *__pyx_n_s_ValueError;
+static PyObject *__pyx_n_s_aa;
 static PyObject *__pyx_n_s_args;
+static PyObject *__pyx_kp_s_b_AAAAAAAAAAAA;
+static PyObject *__pyx_kp_s_b_TTTTTTTTTTTT;
 static PyObject *__pyx_n_s_checkGCcontent;
+static PyObject *__pyx_n_s_checkPolyA;
 static PyObject *__pyx_n_s_cline_in_traceback;
 static PyObject *__pyx_n_s_close;
 static PyObject *__pyx_n_s_d;
@@ -1357,7 +1384,9 @@ static PyObject *__pyx_n_s_main;
 static PyObject *__pyx_n_s_min_dist;
 static PyObject *__pyx_n_s_min_substring;
 static PyObject *__pyx_n_s_name;
+static PyObject *__pyx_n_s_out;
 static PyObject *__pyx_n_s_range;
+static PyObject *__pyx_n_s_s;
 static PyObject *__pyx_n_s_search;
 static PyObject *__pyx_n_s_search_min_dist;
 static PyObject *__pyx_n_s_send;
@@ -1369,18 +1398,22 @@ static PyObject *__pyx_n_s_sum;
 static PyObject *__pyx_n_s_test;
 static PyObject *__pyx_n_s_throw;
 static PyObject *__pyx_n_s_total_bases;
+static PyObject *__pyx_n_s_tt;
 static PyObject *__pyx_n_s_x;
 static PyObject *__pyx_n_s_zip;
 static PyObject *__pyx_pf_10splitfastq_checkGCcontent(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_seq); /* proto */
 static PyObject *__pyx_pf_10splitfastq_8ham_dist_genexpr(PyObject *__pyx_self); /* proto */
 static PyObject *__pyx_pf_10splitfastq_2search_min_dist(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_source, PyObject *__pyx_v_search); /* proto */
+static PyObject *__pyx_pf_10splitfastq_4checkPolyA(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_s); /* proto */
 static PyObject *__pyx_tp_new_10splitfastq___pyx_scope_struct____pyx_f_10splitfastq_ham_dist(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
 static PyObject *__pyx_tp_new_10splitfastq___pyx_scope_struct_1_genexpr(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
 static PyObject *__pyx_tuple_;
 static PyObject *__pyx_tuple__2;
 static PyObject *__pyx_tuple__4;
+static PyObject *__pyx_tuple__6;
 static PyObject *__pyx_codeobj__3;
 static PyObject *__pyx_codeobj__5;
+static PyObject *__pyx_codeobj__7;
 /* Late includes */
 
 /* "splitfastq.pyx":2
@@ -2148,6 +2181,7 @@ static PyObject *__pyx_pf_10splitfastq_2search_min_dist(CYTHON_UNUSED PyObject *
  *             index = i
  *             min_substring = source[i:i+l]             # <<<<<<<<<<<<<<
  *     return min_dist
+ * 
  */
       if (unlikely(__pyx_v_source == Py_None)) {
         PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
@@ -2204,6 +2238,8 @@ static PyObject *__pyx_pf_10splitfastq_2search_min_dist(CYTHON_UNUSED PyObject *
  *             index = i
  *             min_substring = source[i:i+l]
  *     return min_dist             # <<<<<<<<<<<<<<
+ * 
+ * ## polyA match
  */
   __Pyx_XDECREF(__pyx_r);
   __pyx_t_2 = __Pyx_PyInt_From_int(__pyx_v_min_dist); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 30, __pyx_L1_error)
@@ -2230,6 +2266,127 @@ static PyObject *__pyx_pf_10splitfastq_2search_min_dist(CYTHON_UNUSED PyObject *
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_min_substring);
   __Pyx_XDECREF(__pyx_v_i);
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "splitfastq.pyx":33
+ * 
+ * ## polyA match
+ * def checkPolyA(str s):             # <<<<<<<<<<<<<<
+ *     cdef str aa, tt
+ * 
+ */
+
+/* Python wrapper */
+static PyObject *__pyx_pw_10splitfastq_5checkPolyA(PyObject *__pyx_self, PyObject *__pyx_v_s); /*proto*/
+static PyMethodDef __pyx_mdef_10splitfastq_5checkPolyA = {"checkPolyA", (PyCFunction)__pyx_pw_10splitfastq_5checkPolyA, METH_O, 0};
+static PyObject *__pyx_pw_10splitfastq_5checkPolyA(PyObject *__pyx_self, PyObject *__pyx_v_s) {
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("checkPolyA (wrapper)", 0);
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_s), (&PyString_Type), 1, "s", 1))) __PYX_ERR(0, 33, __pyx_L1_error)
+  __pyx_r = __pyx_pf_10splitfastq_4checkPolyA(__pyx_self, ((PyObject*)__pyx_v_s));
+
+  /* function exit code */
+  goto __pyx_L0;
+  __pyx_L1_error:;
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_10splitfastq_4checkPolyA(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_s) {
+  PyObject *__pyx_v_aa = 0;
+  PyObject *__pyx_v_tt = 0;
+  PyObject *__pyx_v_out = NULL;
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  int __pyx_t_2;
+  PyObject *__pyx_t_3 = NULL;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannySetupContext("checkPolyA", 0);
+
+  /* "splitfastq.pyx":36
+ *     cdef str aa, tt
+ * 
+ *     aa='A'*12             # <<<<<<<<<<<<<<
+ *     tt='T'*12
+ *     out=aa in s or tt in s
+ */
+  __Pyx_INCREF(__pyx_kp_s_b_AAAAAAAAAAAA);
+  __pyx_v_aa = __pyx_kp_s_b_AAAAAAAAAAAA;
+
+  /* "splitfastq.pyx":37
+ * 
+ *     aa='A'*12
+ *     tt='T'*12             # <<<<<<<<<<<<<<
+ *     out=aa in s or tt in s
+ *     return out
+ */
+  __Pyx_INCREF(__pyx_kp_s_b_TTTTTTTTTTTT);
+  __pyx_v_tt = __pyx_kp_s_b_TTTTTTTTTTTT;
+
+  /* "splitfastq.pyx":38
+ *     aa='A'*12
+ *     tt='T'*12
+ *     out=aa in s or tt in s             # <<<<<<<<<<<<<<
+ *     return out
+ */
+  __pyx_t_2 = (__Pyx_PySequence_ContainsTF(__pyx_v_aa, __pyx_v_s, Py_EQ)); if (unlikely(__pyx_t_2 < 0)) __PYX_ERR(0, 38, __pyx_L1_error)
+  if (!__pyx_t_2) {
+  } else {
+    __pyx_t_3 = __Pyx_PyBool_FromLong(__pyx_t_2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 38, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_3);
+    __pyx_t_1 = __pyx_t_3;
+    __pyx_t_3 = 0;
+    goto __pyx_L3_bool_binop_done;
+  }
+  __pyx_t_2 = (__Pyx_PySequence_ContainsTF(__pyx_v_tt, __pyx_v_s, Py_EQ)); if (unlikely(__pyx_t_2 < 0)) __PYX_ERR(0, 38, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyBool_FromLong(__pyx_t_2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 38, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_3);
+  __pyx_t_1 = __pyx_t_3;
+  __pyx_t_3 = 0;
+  __pyx_L3_bool_binop_done:;
+  __pyx_v_out = __pyx_t_1;
+  __pyx_t_1 = 0;
+
+  /* "splitfastq.pyx":39
+ *     tt='T'*12
+ *     out=aa in s or tt in s
+ *     return out             # <<<<<<<<<<<<<<
+ */
+  __Pyx_XDECREF(__pyx_r);
+  __Pyx_INCREF(__pyx_v_out);
+  __pyx_r = __pyx_v_out;
+  goto __pyx_L0;
+
+  /* "splitfastq.pyx":33
+ * 
+ * ## polyA match
+ * def checkPolyA(str s):             # <<<<<<<<<<<<<<
+ *     cdef str aa, tt
+ * 
+ */
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_XDECREF(__pyx_t_3);
+  __Pyx_AddTraceback("splitfastq.checkPolyA", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_XDECREF(__pyx_v_aa);
+  __Pyx_XDECREF(__pyx_v_tt);
+  __Pyx_XDECREF(__pyx_v_out);
   __Pyx_XGIVEREF(__pyx_r);
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
@@ -2499,8 +2656,20 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_G, __pyx_k_G, sizeof(__pyx_k_G), 0, 0, 1, 1},
   {&__pyx_n_s_Undefined, __pyx_k_Undefined, sizeof(__pyx_k_Undefined), 0, 0, 1, 1},
   {&__pyx_n_s_ValueError, __pyx_k_ValueError, sizeof(__pyx_k_ValueError), 0, 0, 1, 1},
+  {&__pyx_n_s_aa, __pyx_k_aa, sizeof(__pyx_k_aa), 0, 0, 1, 1},
   {&__pyx_n_s_args, __pyx_k_args, sizeof(__pyx_k_args), 0, 0, 1, 1},
+  #if PY_MAJOR_VERSION >= 3
+  {&__pyx_kp_s_b_AAAAAAAAAAAA, __pyx_k_AAAAAAAAAAAA, sizeof(__pyx_k_AAAAAAAAAAAA), 0, 1, 0, 0},
+  #else
+  {&__pyx_kp_s_b_AAAAAAAAAAAA, __pyx_k_b_AAAAAAAAAAAA, sizeof(__pyx_k_b_AAAAAAAAAAAA), 0, 0, 1, 0},
+  #endif
+  #if PY_MAJOR_VERSION >= 3
+  {&__pyx_kp_s_b_TTTTTTTTTTTT, __pyx_k_TTTTTTTTTTTT, sizeof(__pyx_k_TTTTTTTTTTTT), 0, 1, 0, 0},
+  #else
+  {&__pyx_kp_s_b_TTTTTTTTTTTT, __pyx_k_b_TTTTTTTTTTTT, sizeof(__pyx_k_b_TTTTTTTTTTTT), 0, 0, 1, 0},
+  #endif
   {&__pyx_n_s_checkGCcontent, __pyx_k_checkGCcontent, sizeof(__pyx_k_checkGCcontent), 0, 0, 1, 1},
+  {&__pyx_n_s_checkPolyA, __pyx_k_checkPolyA, sizeof(__pyx_k_checkPolyA), 0, 0, 1, 1},
   {&__pyx_n_s_cline_in_traceback, __pyx_k_cline_in_traceback, sizeof(__pyx_k_cline_in_traceback), 0, 0, 1, 1},
   {&__pyx_n_s_close, __pyx_k_close, sizeof(__pyx_k_close), 0, 0, 1, 1},
   {&__pyx_n_s_d, __pyx_k_d, sizeof(__pyx_k_d), 0, 0, 1, 1},
@@ -2515,7 +2684,9 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_min_dist, __pyx_k_min_dist, sizeof(__pyx_k_min_dist), 0, 0, 1, 1},
   {&__pyx_n_s_min_substring, __pyx_k_min_substring, sizeof(__pyx_k_min_substring), 0, 0, 1, 1},
   {&__pyx_n_s_name, __pyx_k_name, sizeof(__pyx_k_name), 0, 0, 1, 1},
+  {&__pyx_n_s_out, __pyx_k_out, sizeof(__pyx_k_out), 0, 0, 1, 1},
   {&__pyx_n_s_range, __pyx_k_range, sizeof(__pyx_k_range), 0, 0, 1, 1},
+  {&__pyx_n_s_s, __pyx_k_s, sizeof(__pyx_k_s), 0, 0, 1, 1},
   {&__pyx_n_s_search, __pyx_k_search, sizeof(__pyx_k_search), 0, 0, 1, 1},
   {&__pyx_n_s_search_min_dist, __pyx_k_search_min_dist, sizeof(__pyx_k_search_min_dist), 0, 0, 1, 1},
   {&__pyx_n_s_send, __pyx_k_send, sizeof(__pyx_k_send), 0, 0, 1, 1},
@@ -2527,6 +2698,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_test, __pyx_k_test, sizeof(__pyx_k_test), 0, 0, 1, 1},
   {&__pyx_n_s_throw, __pyx_k_throw, sizeof(__pyx_k_throw), 0, 0, 1, 1},
   {&__pyx_n_s_total_bases, __pyx_k_total_bases, sizeof(__pyx_k_total_bases), 0, 0, 1, 1},
+  {&__pyx_n_s_tt, __pyx_k_tt, sizeof(__pyx_k_tt), 0, 0, 1, 1},
   {&__pyx_n_s_x, __pyx_k_x, sizeof(__pyx_k_x), 0, 0, 1, 1},
   {&__pyx_n_s_zip, __pyx_k_zip, sizeof(__pyx_k_zip), 0, 0, 1, 1},
   {0, 0, 0, 0, 0, 0, 0}
@@ -2578,6 +2750,18 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__4);
   __Pyx_GIVEREF(__pyx_tuple__4);
   __pyx_codeobj__5 = (PyObject*)__Pyx_PyCode_New(2, 0, 8, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__4, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_splitfastq_pyx, __pyx_n_s_search_min_dist, 16, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__5)) __PYX_ERR(0, 16, __pyx_L1_error)
+
+  /* "splitfastq.pyx":33
+ * 
+ * ## polyA match
+ * def checkPolyA(str s):             # <<<<<<<<<<<<<<
+ *     cdef str aa, tt
+ * 
+ */
+  __pyx_tuple__6 = PyTuple_Pack(4, __pyx_n_s_s, __pyx_n_s_aa, __pyx_n_s_tt, __pyx_n_s_out); if (unlikely(!__pyx_tuple__6)) __PYX_ERR(0, 33, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__6);
+  __Pyx_GIVEREF(__pyx_tuple__6);
+  __pyx_codeobj__7 = (PyObject*)__Pyx_PyCode_New(1, 0, 4, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__6, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_splitfastq_pyx, __pyx_n_s_checkPolyA, 33, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__7)) __PYX_ERR(0, 33, __pyx_L1_error)
   __Pyx_RefNannyFinishContext();
   return 0;
   __pyx_L1_error:;
@@ -2901,6 +3085,18 @@ if (!__Pyx_RefNanny) {
   __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_10splitfastq_3search_min_dist, NULL, __pyx_n_s_splitfastq); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 16, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_search_min_dist, __pyx_t_1) < 0) __PYX_ERR(0, 16, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+
+  /* "splitfastq.pyx":33
+ * 
+ * ## polyA match
+ * def checkPolyA(str s):             # <<<<<<<<<<<<<<
+ *     cdef str aa, tt
+ * 
+ */
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_10splitfastq_5checkPolyA, NULL, __pyx_n_s_splitfastq); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 33, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_checkPolyA, __pyx_t_1) < 0) __PYX_ERR(0, 33, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
   /* "splitfastq.pyx":1

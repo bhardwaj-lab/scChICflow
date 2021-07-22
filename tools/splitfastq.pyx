@@ -28,3 +28,12 @@ def search_min_dist(str source, str search):
             index = i
             min_substring = source[i:i+l]
     return min_dist
+
+## polyA match
+def checkPolyA(str s):
+    cdef str aa, tt
+
+    aa='A'*12
+    tt='T'*12
+    out=aa in s or tt in s
+    return out

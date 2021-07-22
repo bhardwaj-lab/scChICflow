@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+
+#-- Usage : split_fastq.py --infile test.fastq.gz --nla_bc /hpc/hub_oudenaarden/group_references/cell_barcodes/maya_384NLA.bc \
+# --celseq_bc /hpc/hub_oudenaarden/vbhardwaj/annotations/cell_barcodes_inhouse/celseq2.whitelist --prefix testOut --ncpus 10
 import sys
 import multiprocessing as mp
 import click
@@ -17,32 +20,33 @@ def process_reads(handle, fh_prefix, nla, cs2):
     bo=[]
     no=[]
     try:
-        seq_one=seq[0:12]
-        seq_two=seq[0:14]
-        #seq_three=seq[0:50]
+        seq_one=seq[3:12]
+        seq_two=seq[6:15]
+        seq_three=seq[0:50]
         seq_four=seq[15:40]
     except UnicodeDecodeError:
         pass
     # search for nla/cs2 barcode upto hamming dist of 1
     nlaStat = any([search_min_dist(seq_one, b)<=1 for b in nla])
     csStat = any([search_min_dist(seq_two, b)<=1 for b in cs2])
-    # Loook for T7 promoter in the beginning of the fastq if they are CS2+NLA
-    #prom='GCCGGTAATACGACTCACTATAGGGAGTTCTACAGTCCGACGATC'
-    #csStat_extended = search_min_dist(seq_three, prom) <=2
+    GCstat = checkGCcontent(seq_four) >=0.3
+    # Loook for T7 promoter in the beginning of the fastq (could be NLA+CS2)
+    prom='GCCGGTAATACGACTCACTATAGGGAGTTCTACAGTCCGACGATC'
+    csStat_extended = search_min_dist(seq_three, prom) <=2
 
-    if nlaStat is True and checkGCcontent(seq_four) >=0.3:
+    if nlaStat and GCstat:
         nlaStat_final = True
     else:
-        nlaStat_final = False# this can still be an NLA+CS2+polyA situation
+        nlaStat_final = False
 
-    if csStat is True and checkGCcontent(seq_four) <0.3:
+    if csStat and not GCstat:
         csStat_final = True
-    #elif csStat_extended is True:
-    #    csStat_final = True#NLA+CS2+polyA situation
+    elif csStat and checkPolyA(seq):#CS2 BC with poly-A(12) stretch
+        csStat_final = True
+    elif csStat_extended:
+        csStat_final = True
     else:
         csStat_final = False
-    # if you find NLA+CS2 barcodes one after another, check for GC content and
-    # re-classify them as cs2
 
     if nlaStat_final is True and csStat_final is True:
         bo.append(read)
