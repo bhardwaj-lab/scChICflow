@@ -57,9 +57,10 @@ if countRegions:
 ################################################################################
 def run_tchic_fastq(protocol):
     if protocol=='tchic':
-        file_list = [expand("FASTQ_RNA/{sample}{read}.fastq.gz", sample = samples, read = reads),
-                     expand("FASTQ_OTHER/{sample}.BOTH.{read}.fastq.gz", sample = samples, read = reads),
-                     expand("FASTQ_OTHER/{sample}.NONE.{read}.fastq.gz", sample = samples, read = reads)]
+        file_list = ["QC/tChIC_split_stats.png",
+                     expand("FASTQ_RNA/{sample}{read}.fastq.gz", sample = samples, read = reads)]#,
+                     #expand("FASTQ_OTHER/{sample}.BOTH{read}.fastq.gz", sample = samples, read = reads),
+                     #expand("FASTQ_OTHER/{sample}.NONE{read}.fastq.gz", sample = samples, read = reads)]
         return(file_list)
     else:
         return([])

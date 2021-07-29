@@ -19,11 +19,11 @@ else:
             cs2=temp("{sample}.CS2.txt"),
             nla=temp("{sample}.NLA.txt"),
             both=temp("{sample}.BOTH.txt"),
-            none=temp("{sample}.NONE.txt")
+            none=temp("{sample}.NONE.txt"),
+            log=temp("QC/{sample}_split_tChIC.log")
         params:
             script = os.path.join(workflow.basedir, "tools", "split_fastq.py"),
             prefix="{sample}"
-        log: "logs/{sample}_split_tChIC.log"
         threads: 10
         shell:
             "{params.script} --ncpus={threads} --infile={input.r1} --prefix={params.prefix} \
@@ -62,8 +62,8 @@ else:
             r2=indir+"/{sample}"+reads[1]+ext,
             names="{sample}.BOTH.txt"
         output:
-            r1="FASTQ_OTHER/{sample}.BOTH."+reads[0]+".fastq.gz",
-            r2="FASTQ_OTHER/{sample}.BOTH."+reads[1]+".fastq.gz"
+            r1="FASTQ_OTHER/{sample}.BOTH"+reads[0]+".fastq.gz",
+            r2="FASTQ_OTHER/{sample}.BOTH"+reads[1]+".fastq.gz"
         log: "logs/{sample}_bothSplit.log"
         shell:
             split_cmd
@@ -74,8 +74,17 @@ else:
             r2=indir+"/{sample}"+reads[1]+ext,
             names="{sample}.NONE.txt"
         output:
-            r1="FASTQ_OTHER/{sample}.NONE."+reads[0]+".fastq.gz",
-            r2="FASTQ_OTHER/{sample}.NONE."+reads[1]+".fastq.gz"
+            r1="FASTQ_OTHER/{sample}.NONE"+reads[0]+".fastq.gz",
+            r2="FASTQ_OTHER/{sample}.NONE"+reads[1]+".fastq.gz"
         log: "logs/{sample}_noneSplit.log"
         shell:
             split_cmd
+
+    rule plot_numbers:
+        input: expand("QC/{sample}_split_tChIC.log", sample=samples)
+        output: "QC/tChIC_split_stats.png"
+        params:
+            indir = "QC"
+            rscript = os.path.join(workflow.basedir, "tools", "plot_tChIC_split.R")
+        shell:
+            "Rscript {params.rscript} {output} {params.indir}"
