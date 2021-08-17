@@ -25,6 +25,7 @@ else:
             script = os.path.join(workflow.basedir, "tools", "split_fastq.py"),
             prefix="{sample}"
         threads: 10
+        log: "logs/{sample}_tChICSplit.log"
         shell:
             "{params.script} --ncpus={threads} --infile={input.r1} --prefix={params.prefix} \
             --nla_bc={input.nla} --celseq_bc={input.cs2} > {log} 2>&1"
@@ -84,7 +85,7 @@ else:
         input: expand("QC/{sample}_split_tChIC.log", sample=samples)
         output: "QC/tChIC_split_stats.png"
         params:
-            indir = "QC"
+            indir = "QC",
             rscript = os.path.join(workflow.basedir, "tools", "plot_tChIC_split.R")
         shell:
             "Rscript {params.rscript} {output} {params.indir}"
