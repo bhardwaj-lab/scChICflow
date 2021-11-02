@@ -156,7 +156,7 @@ rule readfiltering_bam:
     input:
         bam = "mapped_bam/{sample}.bam",
         bai = "mapped_bam/{sample}.bam.bai"
-    output: "QC/readfiltering_bwa_{sample}.txt"
+    output: temp("QC/readfiltering_bwa_{sample}.txt")
     params:
         mapq = min_mapq,
         blacklist = "-bl " + blacklist_bed if blacklist_bed else ""

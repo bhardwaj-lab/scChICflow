@@ -47,7 +47,7 @@ rule readfiltering_dedup:
     input:
         bam = "dedup_bam/{sample}.bam",
         bai = "dedup_bam/{sample}.bam.bai"
-    output: "QC/readfiltering_dedup_{sample}.txt"
+    output: temp("QC/readfiltering_dedup_{sample}.txt")
     params:
         mapq = min_mapq,
         blacklist = "-bl " + blacklist_bed if blacklist_bed else ""
@@ -98,12 +98,13 @@ rule plotEnrichment_biotype:
     output: "QC/featureEnrichment_biotype.png"
     log: "logs/plotEnrichment_biotype.log"
     params:
-        blacklist = "-bl " + blacklist_bed if blacklist_bed else ""
+        blacklist = "-bl " + blacklist_bed if blacklist_bed else "",
+        attributeKey='gene_type'
     threads: 8
     conda: CONDA_SHARED_ENV
     shell:
         "plotEnrichment -p {threads} --BED {input.gtf} {params.blacklist} \
-        --attributeKey 'gene_biotype' --smartLabels --variableScales --perSample \
+        --attributeKey {params.attributeKey} --smartLabels --variableScales --perSample \
         -b {input.bam} -o {output}  > {log} 2>&1"
 
 rule bwSummary:
