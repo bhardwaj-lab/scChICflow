@@ -9,3 +9,11 @@ bam_map:
     memory: 20G
 split_tChIC:
     memory: 20G
+split_fastq_dna:
+    memory: 50G
+split_fastq_rna:
+    memory: 50G
+split_fastq_both:
+    memory: 50G
+split_fastq_none:
+    memory: 50G
