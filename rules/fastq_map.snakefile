@@ -146,7 +146,7 @@ rule bam_index:
 
 rule flagstat_bam:
     input: "mapped_bam/{sample}.bam"
-    output: "QC/flagstat_bwa_{sample}.txt"
+    output: temp("QC/flagstat_bwa_{sample}.txt")
     threads: 1
     conda: CONDA_SHARED_ENV
     shell: "samtools flagstat {input} > {output}"

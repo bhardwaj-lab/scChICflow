@@ -38,7 +38,7 @@ rule index_dedup:
 
 rule flagstat_dedup:
     input: "dedup_bam/{sample}.bam"
-    output: "QC/flagstat_dedup_{sample}.txt"
+    output: temp("QC/flagstat_dedup_{sample}.txt")
     threads: 1
     conda: CONDA_SHARED_ENV
     shell: "samtools flagstat {input} > {output}"
