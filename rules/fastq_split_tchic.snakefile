@@ -21,13 +21,14 @@ else:
             both=temp("{sample}.BOTH.txt"),
             none=temp("{sample}.NONE.txt"),
             log="QC/{sample}_split_tChIC.log"
+        log: "logs/{sample}_split_tChIC.err"
         params:
             script = os.path.join(workflow.basedir, "tools", "split_fastq.py"),
             prefix="{sample}"
         threads: 10
         shell:
             "{params.script} --ncpus={threads} --infile={input.r1} --prefix={params.prefix} \
-            --nla_bc={input.nla} --celseq_bc={input.cs2} > {output.log} 2>&1"
+            --nla_bc={input.nla} --celseq_bc={input.cs2} > {output.log} 2> {log}"
 
     split_cmd="filterbyname.sh -Xmx50g include=t in={input.r1} in2={input.r2} \
         out={output.r1} out2={output.r2} names={input.names} > {log} 2>&1"
