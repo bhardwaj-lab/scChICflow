@@ -21,7 +21,7 @@ else:
             both=temp("{sample}.BOTH.txt"),
             none=temp("{sample}.NONE.txt"),
             log="QC/{sample}_split_tChIC.log"
-        log: "logs/{sample}_split_tChIC.err"
+        log: "logs/split_tChIC_{sample}.err"
         params:
             script = os.path.join(workflow.basedir, "tools", "split_fastq.py"),
             prefix="{sample}"
@@ -41,7 +41,7 @@ else:
         output:
             r1="FASTQ/{sample}"+reads[0]+".fastq.gz",
             r2="FASTQ/{sample}"+reads[1]+".fastq.gz"
-        log: "logs/{sample}_dnaSplit.log"
+        log: "logs/dnaSplit_{sample}.log"
         shell:
             split_cmd
 
@@ -53,7 +53,7 @@ else:
         output:
             r1="FASTQ_RNA/{sample}"+reads[0]+".fastq.gz",
             r2="FASTQ_RNA/{sample}"+reads[1]+".fastq.gz"
-        log: "logs/{sample}_rnaSplit.log"
+        log: "logs/rnaSplit_{sample}.log"
         shell:
             split_cmd
 
@@ -65,7 +65,7 @@ else:
         output:
             r1="FASTQ_OTHER/{sample}.BOTH"+reads[0]+".fastq.gz",
             r2="FASTQ_OTHER/{sample}.BOTH"+reads[1]+".fastq.gz"
-        log: "logs/{sample}_bothSplit.log"
+        log: "logs/bothSplit_{sample}.log"
         shell:
             split_cmd
 
@@ -77,7 +77,7 @@ else:
         output:
             r1="FASTQ_OTHER/{sample}.NONE"+reads[0]+".fastq.gz",
             r2="FASTQ_OTHER/{sample}.NONE"+reads[1]+".fastq.gz"
-        log: "logs/{sample}_noneSplit.log"
+        log: "logs/noneSplit_{sample}.log"
         shell:
             split_cmd
 
