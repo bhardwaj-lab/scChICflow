@@ -26,6 +26,8 @@ else:
             script = os.path.join(workflow.basedir, "tools", "split_fastq.py"),
             prefix="{sample}"
         threads: 10
+        resources:
+            mem_mb=300000
         shell:
             "{params.script} --ncpus={threads} --infile={input.r1} --prefix={params.prefix} \
             --nla_bc={input.nla} --celseq_bc={input.cs2} > {output.log} 2> {log}"
