@@ -31,8 +31,8 @@ def process_reads(handle, fh_prefix, nla, cs2):
     csStat = any([search_min_dist(seq_two, b)<=1 for b in cs2])
     GCstat = checkGCcontent(seq_four) >=0.3
     # Loook for T7 promoter in the beginning of the fastq (could be NLA+CS2)
-    prom='GCCGGTAATACGACTCACTATAGGGAGTTCTACAGTCCGACGATC'
-    csStat_extended = search_min_dist(seq_three, prom) <=2
+    #prom='GCCGGTAATACGACTCACTATAGGGAGTTCTACAGTCCGACGATC'
+    #csStat_extended = search_min_dist(seq_three, prom) <=2
 
     if nlaStat and GCstat:
         nlaStat_final = True
@@ -43,8 +43,8 @@ def process_reads(handle, fh_prefix, nla, cs2):
         csStat_final = True
     elif csStat and checkPolyA(seq):#CS2 BC with poly-A(12) stretch
         csStat_final = True
-    elif csStat_extended:
-        csStat_final = True
+    #elif csStat_extended:
+    #    csStat_final = True
     else:
         csStat_final = False
 

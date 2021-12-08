@@ -25,7 +25,7 @@ else:
         params:
             script = os.path.join(workflow.basedir, "tools", "split_fastq.py"),
             prefix="{sample}"
-        threads: 10
+        threads: 20
         resources:
             mem_mb=300000
         shell:
