@@ -27,7 +27,7 @@ else:
             prefix="{sample}"
         threads: 20
         resources:
-            mem_mb=300000
+            mem_mb=200000
         shell:
             "{params.script} --ncpus={threads} --infile={input.r1} --prefix={params.prefix} \
             --nla_bc={input.nla} --celseq_bc={input.cs2} > {output.log} 2> {log}"
