@@ -59,12 +59,24 @@ def process_reads(handle, fh_prefix, nla, cs2):
 
     return {'CS2':cs, 'NLA': nl, 'BOTH': bo, 'NONE': no}
 
+## a simpler version that only checks for AT content and splits the reads into CS2 and NLA
+def process_reads_simple(handle, fh_prefix, nla, cs2):
+    read, seq = handle
+    cs=[]; nl=[]
+    if checkPolyA(seq):#CS2 BC with poly-A(12) stretch
+        cs.append(read)
+    else:
+        nl.append(read)
+    return {'CS2':cs, 'NLA': nl}
+
+
 @click.command()
 @click.option('--infile')#, type=click.File(mode='r'))
 @click.option('--nla_bc')#, type=click.File(mode='r'))#'/hpc/hub_oudenaarden/vbhardwaj/annotations/cell_barcodes_inhouse/maya_384NLA.bc'
 @click.option('--celseq_bc')#, type=click.File(mode='r'))#'/hpc/hub_oudenaarden/vbhardwaj/annotations/cell_barcodes_inhouse/celseq2_barcodes.txt'
 @click.option('--prefix')#, type=click.STRING)
 @click.option('--ncpus')
+@click.option('--simple', is_flag=True)
 def run(infile, nla_bc, celseq_bc, prefix, ncpus):
     # get barcodes
     nla=[]
@@ -76,12 +88,19 @@ def run(infile, nla_bc, celseq_bc, prefix, ncpus):
         for rec_id, seq, _ in FastqGeneralIterator(in_handle):
             yield rec_id, str(Seq(seq))
 
-    func=partial(process_reads, fh_prefix=prefix, nla=nla, cs2=cs2)
+    if simple:
+        func=partial(process_reads_simple, fh_prefix=prefix, nla=nla, cs2=cs2)
+        out_type=['CS2', 'NLA']
+    else:
+        func=partial(process_reads, fh_prefix=prefix, nla=nla, cs2=cs2)
+        out_type=['CS2', 'NLA', 'BOTH', 'NONE']
+
     with gzip.open(infile, 'rt') as input_handle:
         p = mp.Pool(processes=int(ncpus))
         g = p.map(func, get_data(input_handle))
+
     ## combine and print results
-    for n in ['CS2', 'NLA', 'BOTH', 'NONE']:
+    for n in out_type:
         full_list=[x[n] for x in g if x[n]!=[]]
         print('{}_{}: {}'.format(prefix, n, len(full_list)))
         with open(prefix+'.'+n+".txt", "w",encoding="utf-8",errors='ignore') as f:
