@@ -1,6 +1,5 @@
 def get_multiqc_input():
     file = [
-        expand("QC/FastQC/{sample}{read}_fastqc.html", sample = samples, read=reads),
         expand("QC/flagstat_bwa_{sample}.txt", sample = samples),
         expand("QC/readfiltering_bwa_{sample}.txt", sample = samples),
         expand("QC/flagstat_dedup_{sample}.txt", sample = samples),
@@ -8,6 +7,8 @@ def get_multiqc_input():
         ]
     if trim:
         file.append(expand("QC/FastQC_trimmed/{sample}{read}_fastqc.html", sample = samples, read = reads))
+    else:
+        file.append(expand("QC/FastQC/{sample}{read}_fastqc.html", sample = samples, read=reads))
     return(file)
 
 rule multiQC:

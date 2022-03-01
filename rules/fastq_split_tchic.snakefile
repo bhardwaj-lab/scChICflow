@@ -20,7 +20,7 @@ else:
             nla=temp("{sample}.NLA.txt"),
             both=temp("{sample}.BOTH.txt"),
             none=temp("{sample}.NONE.txt"),
-            log="QC/{sample}_split_tChIC.log"
+            log=temp("QC/{sample}_split_tChIC.log")
         log: "logs/split_tChIC_{sample}.err"
         params:
             script = os.path.join(workflow.basedir, "tools", "split_fastq.py"),
