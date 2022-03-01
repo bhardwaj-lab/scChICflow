@@ -93,8 +93,8 @@ def meth_check():
     "QC/featureEnrichment.png",
     "QC/featureEnrichment_biotype.png"]
     if len(samples) > 1:
-        file_list.extend(["QC/bwSummary_10kBins.npz",
-                        "QC/cor-spearman_10kBins.png"])
+        file_list.extend(["QC/bwSummary_bins.npz",
+                        "QC/cor-spearman_bins.png"])
     return(file_list)
 
 ### main rule ##################################################################

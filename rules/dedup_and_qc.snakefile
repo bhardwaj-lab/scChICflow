@@ -66,12 +66,13 @@ rule bamCoverage_dedup:
     params:
         ignore = "chrX chrY chrM",
         extendReads = "-e --maxFragmentLength 1000" if protocol=="tchic" else "",
-        blacklist = "-bl " + blacklist_bed if blacklist_bed else ""
+        blacklist = "-bl " + blacklist_bed if blacklist_bed else "",
+        binsize = bw_binsize if bw_binsize else 100
     log: "logs/bamCoverage_dedup_{sample}.out"
     threads: 10
     conda: CONDA_SHARED_ENV
     shell:
-        "bamCoverage --normalizeUsing CPM -bs 100 -p {threads} \
+        "bamCoverage --normalizeUsing CPM -bs {params.binsize} -p {threads} \
         -ignore {params.ignore} {params.blacklist} \
         -b {input.bam} -o {output} > {log} 2>&1"
 
@@ -110,19 +111,20 @@ rule plotEnrichment_biotype:
 rule bwSummary:
     input:
         bw = expand("coverage/{sample}_dedup.cpm.bw", sample = samples)
-    output: "QC/bwSummary_10kBins.npz"
+    output: "QC/bwSummary_bins.npz"
     log: "logs/bwSummary.log"
     params:
-        blacklist = "-bl " + blacklist_bed if blacklist_bed else ""
+        blacklist = "-bl " + blacklist_bed if blacklist_bed else "",
+        binsize = bw_binsize*10 if bw_binsize else 10000
     threads: 8
     conda: CONDA_SHARED_ENV
     shell:
-        "multiBigwigSummary bins -p {threads} {params.blacklist} \
+        "multiBigwigSummary bins -bs {params.binsize} -p {threads} {params.blacklist} \
         --smartLabels -b {input.bw} -o {output}  > {log} 2>&1"
 
 rule plotCorrelation:
-    input: "QC/bwSummary_10kBins.npz"
-    output: "QC/cor-spearman_10kBins.png"
+    input: "QC/bwSummary_bins.npz"
+    output: "QC/cor-spearman_bins.png"
     log: "logs/plotCorrelation.log"
     threads: 1
     conda: CONDA_SHARED_ENV

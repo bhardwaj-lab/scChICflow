@@ -25,8 +25,10 @@ genomeSize: 2913022398
 genome2bit: '/hpc/hub_oudenaarden/vbhardwaj/annotations/hg38_gencode31_extra/genome_fasta/genome.2bit'
 # context to select to create bed files (empty means consider all contexts)
 bedContext:
-# bin size to count CpG methylation/ChIC-fragments (result is bins*cells matrix)
+# bin size to ChIC-fragments (result is bins*cells matrix)
 binSize:
+# bin size for coverage (bigwig) files
+bw_binsize:
 # minimum mapq threshold to extract signal from
 min_mapq:
 # also count reads on genes/regions?
