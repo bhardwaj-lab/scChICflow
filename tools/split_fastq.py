@@ -77,7 +77,7 @@ def process_reads_simple(handle, fh_prefix, nla, cs2):
 @click.option('--prefix')#, type=click.STRING)
 @click.option('--ncpus')
 @click.option('--simple', is_flag=True)
-def run(infile, nla_bc, celseq_bc, prefix, ncpus):
+def run(infile, nla_bc, celseq_bc, prefix, ncpus, simple):
     # get barcodes
     nla=[]
     with open(nla_bc, 'r') as f:
