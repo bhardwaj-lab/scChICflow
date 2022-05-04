@@ -22,16 +22,18 @@ blacklist_bed: "/hpc/hub_oudenaarden/vbhardwaj/annotations/blacklists/hg38-black
 # genome size (for MACS2 peak calling)
 genomeSize: 2913022398
 # two bit file for scFIlterStats (TA-filter)
-genome2bit:
+genome2bit: '/hpc/hub_oudenaarden/vbhardwaj/annotations/hg38_gencode31_extra/genome_fasta/genome.2bit'
 # context to select to create bed files (empty means consider all contexts)
 bedContext:
-# bin size to count CpG methylation/ChIC-fragments (result is bins*cells matrix)
+# bin size to ChIC-fragments (result is bins*cells matrix)
 binSize:
-# Does the sample contain lambda phage as methylation control
-lambda_phage: True
+# bin size for coverage (bigwig) files
+bw_binsize:
 # minimum mapq threshold to extract signal from
 min_mapq:
-# which protocol? (options: 'nla-taps', 'chic-taps', 'chic')
-method:
 # also count reads on genes/regions?
 countRegions:
+# protocol (chic or tchic?)
+protocol:
+# if protocol is tchic, provide CS2 cell barcodes
+barcodes_cs2:

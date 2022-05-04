@@ -11,18 +11,19 @@ if countRegions == "windows":
             rownames = "counts/scCounts_"+binSize+"bp_bins.rownames.txt",
         params:
             bin = binSize,
-            prefix = "counts/scCounts_"+binSize+"bp_bins"
-        log: "logs/featurecounts_{sample}_bulk.err"
+            prefix = "counts/scCounts_"+binSize+"bp_bins",
+            path='~/programs/sincei/bin'
+        log: "logs/sincei_count_windows.err"
         threads: 10
         conda: CONDA_SHARED_ENV
         shell:
-            "~/programs/scDeepTools/bin/scCountReads.py bins \
+            "{params.path}/scCountReads.py bins \
             --minAlignedFraction 0.6 --GCcontentFilter '0.2,0.8' \
-            --barcodes {params.barcodes} \
-            -bl {params.blk} \
+            --barcodes {input.barcodes} \
+            -bl {input.blk} \
             -b {input.bam} \
             --smartLabels -p {threads} -bs {params.bin} --outFileFormat mtx \
-            -o {params.prefix} {input.bam} > {log} 2>&1"
+            -o {params.prefix} > {log} 2>&1"
 
 elif countRegions == "bed" or countRegions == "peaks":
     rule count_regions:
@@ -38,19 +39,20 @@ elif countRegions == "bed" or countRegions == "peaks":
             rownames = "counts/scCounts_"+countRegions+".rownames.txt",
         params:
             bin = binSize,
-            prefix = "counts/scCounts_"+countRegions
-        log: "logs/featurecounts_{sample}_bulk.err"
+            prefix = "counts/scCounts_"+countRegions,
+            path='~/programs/sincei/bin'
+        log: "logs/sincei_count_bed.err"
         threads: 10
         conda: CONDA_SHARED_ENV
         shell:
-            "~/programs/scDeepTools/bin/scCountReads.py BED-file \
+            "{params.path}/scCountReads.py BED-file \
             --BED {input.bed} \
             --minAlignedFraction 0.6 --GCcontentFilter '0.2,0.8' \
-            --barcodes {params.barcodes} \
-            -bl {params.blk} \
+            --barcodes {input.barcodes} \
+            -bl {input.blk} \
             -b {input.bam} \
             --smartLabels -p {threads} -bs {params.bin} --outFileFormat mtx \
-            -o {params.prefix} {input.bam} > {log} 2>&1"
+            -o {params.prefix} > {log} 2>&1"
 
 elif countRegions == "genes":
     print("Counting reads in genes per cell")

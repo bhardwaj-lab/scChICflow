@@ -44,23 +44,27 @@ samples = get_sample_names(infiles,ext,reads)
 
 ### include modules of other snakefiles ########################################
 ################################################################################
+include: os.path.join(workflow.basedir, "rules", "fastq_split_tchic.snakefile")
 include: os.path.join(workflow.basedir, "rules", "fastq_map.snakefile")
-
-if method in ['chic-taps', 'nla-taps']:
-    include: os.path.join(workflow.basedir, "rules", "methCall.snakefile")
-    if lambda_phage:
-        include: os.path.join(workflow.basedir, "rules", "methCall_lambda_phage.snakefile")
-
-if method in ['chic-taps', 'chic']:
-    include: os.path.join(workflow.basedir, "rules", "dedup_and_qc.snakefile")
-    include: os.path.join(workflow.basedir, "rules", "peakcall.snakefile")
-    if countRegions:
-        include: os.path.join(workflow.basedir, "rules", "counting.snakefile")
-
+include: os.path.join(workflow.basedir, "rules", "dedup_and_qc.snakefile")
 include: os.path.join(workflow.basedir, "rules", "QC.snakefile")
+include: os.path.join(workflow.basedir, "rules", "peakcall.snakefile")
+if countRegions:
+    include: os.path.join(workflow.basedir, "rules", "counting_sincei.snakefile")
+
 
 ### conditional/optional rules #################################################
 ################################################################################
+def run_tchic_fastq(protocol):
+    if protocol=='tchic':
+        file_list = ["QC/tChIC_split_stats.png",
+                     expand("FASTQ_RNA/{sample}{read}.fastq.gz", sample = samples, read = reads),
+                     expand("FASTQ_OTHER/{sample}.BOTH{read}.fastq.gz", sample = samples, read = reads),
+                     expand("FASTQ_OTHER/{sample}.NONE{read}.fastq.gz", sample = samples, read = reads)]
+        return(file_list)
+    else:
+        return([])
+
 def run_Trimming(trim):
     if trim:
         file_list = [
@@ -73,75 +77,46 @@ def run_Trimming(trim):
 
 def count_regions():
     if countRegions is not None:
-        file_list = expand("counts/{sample}."+countRegions+"_per_barcode.tsv", sample = samples)
+        if countRegions == "windows":
+            file_list = "counts/scCounts_"+binSize+"bp_bins.counts.mtx"
+        if countRegions == "peaks" or countRegions == "bed":
+            file_list = "counts/scCounts_"+countRegions+".counts.mtx"
         return(file_list)
     else:
         return([])
 
-def meth_check(type=method):
-    file_list = []
-    if type in ['chic-taps', 'nla-taps']:
-        file_list.extend([
-        expand("tagged_bam/{sample}.bam", sample = samples),
-        #expand("meth_calls/{sample}_methylation.bed.gz", sample = samples),
-        #expand("coverage/{sample}.methRatio.bw", sample = samples),
-        expand("meth_counts/{sample}_CpG_binCounts.meth.csv", sample = samples),
-        expand("meth_counts/{sample}_CpG_binCounts.unmeth.csv", sample = samples),
-        expand("QC/scMultiOmics/{sample}_QCplots/ConversionMatrix.conversions.png", sample = samples)
-        ])
-        if lambda_phage:
-            file_list.extend([
-            expand("tagged_bam/lambda_phage/{sample}.bam", sample = samples),
-            expand("tagged_bam/lambda_phage/{sample}.bam.bai", sample = samples),
-            expand("meth_calls/lambda_phage/{sample}_stats.txt", sample = samples),
-            #expand("meth_calls/lambda_phage/{sample}.methRatio.bw", sample = samples),
-                            "QC/lambda_stats.txt"])
-        #if len(samples) > 1:
-        #    file_list.extend(["QC/bwSummary_methRatio_10kBins.npz",
-        #                    "QC/cor-spearman_methRatio_10kBins.png"])
-
-    if type in ['chic', 'chic-taps']:
-        file_list.extend([
-        expand("dedup_bam/{sample}.bam", sample = samples),
-        expand("dedup_bam/{sample}.bam.bai", sample = samples),
-        expand("coverage/{sample}_dedup.cpm.bw", sample = samples),
-        "QC/featureEnrichment.png",
-        "QC/featureEnrichment_biotype.png",
-        expand("counts/{sample}.per_barcode.tsv", sample = samples),
-#        expand("counts/{sample}.windows_total.tsv", sample = samples),
-#        expand("counts/{sample}.windows_per_barcode.tsv", sample = samples),
-#        expand("macs2_peaks/{sample}_peaks.narrowPeak", sample = samples),
-#        expand("macs2_peaks/{sample}_peaks.bed", sample = samples),
-        ])
-        if len(samples) > 1:
-            file_list.extend(["QC/bwSummary_10kBins.npz",
-                            "QC/cor-spearman_10kBins.png"])
-
-#    if type == 'chic-taps':
-#        file_list.extend([expand("counts/{sample}_peaks.csv", sample = samples)])
+def meth_check():
+    file_list = [
+    expand("dedup_bam/{sample}.bam", sample = samples),
+    expand("dedup_bam/{sample}.bam.bai", sample = samples),
+    expand("coverage/{sample}_dedup.cpm.bw", sample = samples),
+    "QC/featureEnrichment.png",
+    "QC/featureEnrichment_biotype.png"]
+    if len(samples) > 1:
+        file_list.extend(["QC/bwSummary_bins.npz",
+                        "QC/cor-spearman_bins.png"])
     return(file_list)
 
 ### main rule ##################################################################
 ################################################################################
-localrules: FASTQ1, FASTQ2, taps_tagger, taps_tagger_phage
+#localrules: FASTQ#1, FASTQ2
 rule all:
     input:
-        #expand("FASTQ/umi_trimmed/umiTrimmed_{sample}{read}.fastq.gz", sample = samples, read = reads),
+        run_tchic_fastq(protocol),
         run_Trimming(trim),
         expand("QC/FastQC/{sample}{read}_fastqc.html", sample = samples, read=reads),
-        expand("bwa_mapped/{sample}.bam", sample = samples),
-        expand("bwa_mapped/{sample}.bam.bai", sample = samples),
+        expand("mapped_bam/{sample}.bam", sample = samples),
+        expand("mapped_bam/{sample}.bam.bai", sample = samples),
         meth_check(),
         count_regions(),
         "QC/plate_plots.pdf",
         "QC/scFilterStats.txt",
         "QC/multiqc_report.html"
 
-
 ### execute after workflow finished ############################################
 ################################################################################
 onsuccess:
     if "verbose" in config and config["verbose"]:
-        print("\n--- openTAPS workflow finished successfully! ------------------\n")
+        print("\n--- scChICflow finished successfully! ------------------\n")
 onerror:
-    print("\n !!!! ERROR in openTAPS workflow! !!!!\n")
+    print("\n !!!! ERROR in scChIC workflow! !!!!\n")

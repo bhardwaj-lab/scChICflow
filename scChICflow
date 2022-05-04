@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
 __description__ = """
-single-cell TAPS analysis pipeline
+single-cell ChIC-seq analysis pipeline
 usage example:
-    openTAPS -i input-dir -o output-dir -c config.yaml mm10
+    scChICflow -i input-dir -o output-dir -c config.yaml mm10
 """
 
 import argparse
@@ -42,7 +42,7 @@ def commonYAMLandLogs(baseDir, args, callingScript):
     # save to configs.yaml in outdir
     config = load_configfile(args.config)
     config.update(vars(args))  # This allows modifications of args after handling a user config file to still make it to the YAML given to snakemake!
-    write_configfile(os.path.join(args.outdir, 'openTAPS_config.yaml'), config)
+    write_configfile(os.path.join(args.outdir, 'scChICflow_config.yaml'), config)
 
     ## load cluster config
     cluster_config = load_configfile(os.path.join(baseDir, "cluster_config.yaml"))
@@ -55,21 +55,21 @@ def commonYAMLandLogs(baseDir, args, callingScript):
 
     snakemake_cmd = """
                     TMPDIR={tempDir} PYTHONNOUSERSITE=True snakemake {snakemakeOptions} --directory {workingdir} --snakefile {snakefile} \
-                    --jobs {maxJobs} --configfile {configFile} --keep-going --latency-wait {latency_wait}
+                    --jobs {maxJobs} --configfile {configFile} --keep-going --latency-wait {latency_wait} --conda-frontend mamba
                     """.format(snakefile=os.path.join(baseDir, "Snakefile"),
                                maxJobs=args.maxJobs,
                                workingdir=args.outdir,
                                tempDir=args.tempDir,
                                latency_wait=cluster_config["latency_wait"],
                                snakemakeOptions=str(args.snakemakeOptions or ''),
-                               configFile=os.path.join(args.outdir, 'openTAPS_config.yaml')).split()
+                               configFile=os.path.join(args.outdir, 'scChICflow_config.yaml')).split()
 
     if args.verbose:
         snakemake_cmd.append("--printshellcmds")
 
     if args.cluster:
         ## always --use-conda on cluster
-        snakemake_cmd += ["--use-conda"]# --conda-frontend mamba
+        snakemake_cmd += ["--use-conda --conda-frontend mamba"]
         snakemake_cmd += ["--conda-prefix " + args.conda_dir]
         snakemake_cmd += ["--cluster-config",
                           os.path.join(baseDir, "cluster_config.yaml"),
@@ -87,7 +87,7 @@ def runAndCleanup(args, cmd):
         print("\n{}\n".format(cmd))
 
     # write log file
-    f = open(os.path.join(args.outdir, "openTAPS.log"), "w")
+    f = open(os.path.join(args.outdir, "scChICflow.log"), "w")
     f.write(" ".join(sys.argv) + "\n\n")
     f.write(cmd + "\n\n")
 
@@ -153,11 +153,6 @@ def parse_args(defaults=None):
                           dest="tempDir",
                           help="Directory to store temporary files. (default: '%(default)s')",
                           default='/tmp/')
-
-    parser.add_argument("-m", "--method",
-                          dest="method",
-                          help="protocol used. option: nla-taps, chic-taps or chic. (default: '%(default)s')",
-                          default='chic-taps')
 
     parser.add_argument("-q", "--minQ",
                           dest="min_mapq",

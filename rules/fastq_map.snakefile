@@ -1,18 +1,3 @@
-rule FASTQ1:
-      input:
-          indir+"/{sample}"+reads[0]+ext
-      output:
-          "FASTQ/{sample}"+reads[0]+".fastq.gz"
-      shell:
-          "( [ -f {output} ] || ln -s -r {input} {output} )"
-
-rule FASTQ2:
-      input:
-          indir+"/{sample}"+reads[1]+ext
-      output:
-          "FASTQ/{sample}"+reads[1]+".fastq.gz"
-      shell:
-          "( [ -f {output} ] || ln -s -r {input} {output} )"
 
 rule FastQC:
     input:
@@ -114,53 +99,69 @@ rule chrSizes:
         "cut -f1-2 {params.genome} > {output}"
 
 ## MAP Fastq
-rule bwa_map:
+#"""
+#bwa mem -v 1 -T {params.mapq} -t {threads} {input.idx} {input.r1} {input.r2} 2> {log.err} |\
+#samtools view -h {params.samfilter} | awk -v sample={params.sample} \
+#'OFS="\\t" {{ if($0 ~ "^@") {{print $0}} else \
+#{{ split($1,a,"_"); $1=""; print a[1]";BC:Z:"a[2]";RX:Z:"a[3], $0, "SM:Z:"sample"_"a[2], "BC:Z:"a[2], "RX:Z:"a[3], "MI:Z:"a[2]a[3] }} }}' |\
+#samtools sort -@ {threads} -T {params.sample} -o {output} > {log.out} 2>> {log.err}
+#"""
+
+filter_cmd = """
+    samtools view -h {params.samfilter} | awk -v sample={params.sample} \
+    'OFS="\\t" {{ if($0 ~ "^@") {{print $0}} else \
+    {{ split($1,a,"_"); $1=""; print a[1]";BC:Z:"a[2]";RX:Z:"a[3], $0, "SM:Z:"sample"_"a[2], "BC:Z:"a[2], "RX:Z:"a[3], "MI:Z:"a[2]a[3] }} }}' |\
+    samtools sort -@ {threads} -T {params.sample} -o {output} > {log.out} 2>> {log.err}
+    """
+
+if protocol == "chic":
+    mapping_cmd = "bwa mem -v 1 -T {params.mapq} -t {threads} {input.idx} {input.r1} {input.r2} 2> {log.err} | " + filter_cmd
+else:
+    mapping_cmd = "hisat2 --sensitive --no-spliced-alignment --no-mixed --no-discordant --no-softclip -X 1000 -x {params.idx} -1 {input.r1} -2 {input.r2} 2> {log.err} | " + filter_cmd
+
+rule bam_map:
     input:
         r1 = lambda wildcards: "FASTQ_trimmed/{sample}"+reads[0]+".fastq.gz" if trim else "FASTQ/umi_trimmed/umiTrimmed_{sample}"+reads[0]+".fastq.gz",
         r2 = lambda wildcards: "FASTQ_trimmed/{sample}"+reads[1]+".fastq.gz" if trim else "FASTQ/umi_trimmed/umiTrimmed_{sample}"+reads[1]+".fastq.gz",
-        idx = bwa_index
-    output: "bwa_mapped/{sample}.bam"
+        idx = bwa_index if protocol == "chic" else hisat2_index+".1.ht2"
+    output: "mapped_bam/{sample}.bam"
     params:
         sample = '{sample}',
-        mapq = min_mapq
+        mapq = min_mapq,
+        samfilter='-F 4 -F 256',
+        idx = "" if protocol == "chic" else hisat2_index
     log:
-        out = "logs/bwa_map_{sample}.out",
-        err = "logs/bwa_map_{sample}.err"
+        out = "logs/bam_map_{sample}.out",
+        err = "logs/bam_map_{sample}.err"
     threads: 10
     conda: CONDA_SHARED_ENV
-    shell:
-        """
-        bwa mem -v 1 -T {params.mapq} -t {threads} {input.idx} {input.r1} {input.r2} 2> {log.err} |\
-        samtools view -F 4 -h | awk -v sample={params.sample} \
-        'OFS="\\t" {{ if($0 ~ "^@") {{print $0}} else \
-        {{ split($1,a,"_"); print a[1]";BC:Z:"a[2]";RX:Z:"a[3], $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, "SM:Z:"sample"_"a[2], "BC:Z:"a[2], "RX:Z:"a[3], "MI:Z:"a[2]a[3] }} }}' |\
-        samtools sort -@ {threads} -T {params.sample} -o {output} > {log.out} 2>> {log.err}
-        """
+    shell: mapping_cmd
 
-rule bwa_index:
-    input: "bwa_mapped/{sample}.bam"
-    output: "bwa_mapped/{sample}.bam.bai"
+
+rule bam_index:
+    input: "mapped_bam/{sample}.bam"
+    output: "mapped_bam/{sample}.bam.bai"
     conda: CONDA_SHARED_ENV
     shell: "samtools index {input}"
 
-rule flagstat_bwa:
-    input: "bwa_mapped/{sample}.bam"
-    output: "QC/flagstat_bwa_{sample}.txt"
+rule flagstat_bam:
+    input: "mapped_bam/{sample}.bam"
+    output: temp("QC/flagstat_bwa_{sample}.txt")
     threads: 1
     conda: CONDA_SHARED_ENV
     shell: "samtools flagstat {input} > {output}"
 
 ## get some stats
-rule readfiltering_bwa:
+rule readfiltering_bam:
     input:
-        bam = "bwa_mapped/{sample}.bam",
-        bai = "bwa_mapped/{sample}.bam.bai",
-        blacklist = blacklist_bed
-    output: "QC/readfiltering_bwa_{sample}.txt"
+        bam = "mapped_bam/{sample}.bam",
+        bai = "mapped_bam/{sample}.bam.bai"
+    output: temp("QC/readfiltering_bwa_{sample}.txt")
     params:
-        mapq = min_mapq
+        mapq = min_mapq,
+        blacklist = "-bl " + blacklist_bed if blacklist_bed else ""
     threads: 10
     conda: CONDA_SHARED_ENV
     shell:
         "estimateReadFiltering -p {threads} --minMappingQuality {params.mapq} --samFlagInclude 64 \
-        -bl {input.blacklist} -b {input.bam} > {output}"
+        {params.blacklist} -b {input.bam} > {output}"

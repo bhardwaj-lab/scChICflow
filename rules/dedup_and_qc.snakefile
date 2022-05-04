@@ -5,15 +5,16 @@
 
 rule umi_dedup:
     input:
-        bam = "bwa_mapped/{sample}.bam",
-        idx = "bwa_mapped/{sample}.bam.bai"
+        bam = "mapped_bam/{sample}.bam",
+        idx = "mapped_bam/{sample}.bam.bai"
     output:
         bam = "dedup_bam/{sample}.bam",
         stats = "QC/umi_dedup/{sample}_per_umi.tsv"
     params:
         mapq = min_mapq,
         sample = "{sample}",
-        tmp = tempDir
+        tmp = tempDir,
+#        paired = "--paired --unmapped-reads use" if protocol == "tchic" else ""
     log:
         out = "logs/umi_dedup_{sample}.out",
         err = "logs/umi_dedup_{sample}.err"
@@ -26,7 +27,7 @@ rule umi_dedup:
         --output-stats=QC/umi_dedup/{params.sample} \
         --temp-dir={params.tmp} \
         -I {input.bam} -L {log.out} > {output.bam} 2> {log.err}"
-# --paired --unmapped-reads use
+
 
 rule index_dedup:
     input: "dedup_bam/{sample}.bam"
@@ -37,7 +38,7 @@ rule index_dedup:
 
 rule flagstat_dedup:
     input: "dedup_bam/{sample}.bam"
-    output: "QC/flagstat_dedup_{sample}.txt"
+    output: temp("QC/flagstat_dedup_{sample}.txt")
     threads: 1
     conda: CONDA_SHARED_ENV
     shell: "samtools flagstat {input} > {output}"
@@ -45,78 +46,85 @@ rule flagstat_dedup:
 rule readfiltering_dedup:
     input:
         bam = "dedup_bam/{sample}.bam",
-        bai = "dedup_bam/{sample}.bam.bai",
-        blacklist = blacklist_bed
-    output: "QC/readfiltering_dedup_{sample}.txt"
+        bai = "dedup_bam/{sample}.bam.bai"
+    output: temp("QC/readfiltering_dedup_{sample}.txt")
     params:
-        mapq = min_mapq
+        mapq = min_mapq,
+        blacklist = "-bl " + blacklist_bed if blacklist_bed else ""
     log: "logs/readfiltering_dedup_{sample}.out",
     threads: 10
     conda: CONDA_SHARED_ENV
     shell:
         "estimateReadFiltering -p {threads} --minMappingQuality {params.mapq} \
-        -bl {input.blacklist} -b {input.bam} > {output} 2> {log}"
+        {params.blacklist} -b {input.bam} > {output} 2> {log}"
 
 rule bamCoverage_dedup:
     input:
         bam = "dedup_bam/{sample}.bam",
-        bai = "dedup_bam/{sample}.bam.bai",
-        blacklist = blacklist_bed
+        bai = "dedup_bam/{sample}.bam.bai"
     output: "coverage/{sample}_dedup.cpm.bw"
     params:
-        ignore = "chrX chrY chrM"
+        ignore = "chrX chrY chrM",
+        extendReads = "-e --maxFragmentLength 1000" if protocol=="tchic" else "",
+        blacklist = "-bl " + blacklist_bed if blacklist_bed else "",
+        binsize = bw_binsize if bw_binsize else 100
     log: "logs/bamCoverage_dedup_{sample}.out"
     threads: 10
     conda: CONDA_SHARED_ENV
     shell:
-        "bamCoverage --normalizeUsing CPM -bs 100 -p {threads} \
-        -ignore {params.ignore} -bl {input.blacklist} \
+        "bamCoverage --normalizeUsing CPM -bs {params.binsize} -p {threads} \
+        -ignore {params.ignore} {params.blacklist} \
         -b {input.bam} -o {output} > {log} 2>&1"
 
 rule plotEnrichment:
     input:
         bam = expand("dedup_bam/{sample}.bam", sample = samples),
         bai = expand("dedup_bam/{sample}.bam.bai", sample = samples),
-        bl = blacklist_bed,
         gtf = gtf_file
     output: "QC/featureEnrichment.png"
     log: "logs/plotEnrichment.log"
+    params:
+        blacklist = "-bl " + blacklist_bed if blacklist_bed else ""
     threads: 8
     conda: CONDA_SHARED_ENV
     shell:
-        "plotEnrichment -p {threads} --BED {input.gtf} -bl {input.bl} \
+        "plotEnrichment -p {threads} --BED {input.gtf} {params.blacklist} \
         --smartLabels --variableScales --perSample -b {input.bam} -o {output}  > {log} 2>&1"
 
 rule plotEnrichment_biotype:
     input:
         bam = expand("dedup_bam/{sample}.bam", sample = samples),
         bai = expand("dedup_bam/{sample}.bam.bai", sample = samples),
-        bl = blacklist_bed,
         gtf = gtf_file
     output: "QC/featureEnrichment_biotype.png"
     log: "logs/plotEnrichment_biotype.log"
+    params:
+        blacklist = "-bl " + blacklist_bed if blacklist_bed else "",
+        attributeKey='gene_type'
     threads: 8
     conda: CONDA_SHARED_ENV
     shell:
-        "plotEnrichment -p {threads} --BED {input.gtf} -bl {input.bl} \
-        --attributeKey 'gene_biotype' --smartLabels --variableScales --perSample \
+        "plotEnrichment -p {threads} --BED {input.gtf} {params.blacklist} \
+        --attributeKey {params.attributeKey} --smartLabels --variableScales --perSample \
         -b {input.bam} -o {output}  > {log} 2>&1"
 
 rule bwSummary:
     input:
-        bw = expand("coverage/{sample}_dedup.cpm.bw", sample = samples),
-        bl = blacklist_bed
-    output: "QC/bwSummary_10kBins.npz"
+        bw = expand("coverage/{sample}_dedup.cpm.bw", sample = samples)
+    output: "QC/bwSummary_bins.npz"
     log: "logs/bwSummary.log"
+    params:
+        blacklist = "-bl " + blacklist_bed if blacklist_bed else "",
+        binsize = bw_binsize*10 if bw_binsize else 10000
     threads: 8
     conda: CONDA_SHARED_ENV
     shell:
-        "multiBigwigSummary bins -p {threads} -bl {input.bl} \
+        "multiBigwigSummary bins -bs {params.binsize} -p {threads} {params.blacklist} \
         --smartLabels -b {input.bw} -o {output}  > {log} 2>&1"
 
 rule plotCorrelation:
-    input: "QC/bwSummary_10kBins.npz"
-    output: "QC/cor-spearman_10kBins.png"
+    input: "QC/bwSummary_bins.npz"
+    output: "QC/cor-spearman_bins.png"
     log: "logs/plotCorrelation.log"
     threads: 1
     conda: CONDA_SHARED_ENV

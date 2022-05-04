@@ -1,16 +1,14 @@
 def get_multiqc_input():
     file = [
-        expand("QC/FastQC/{sample}{read}_fastqc.html", sample = samples, read=reads),
         expand("QC/flagstat_bwa_{sample}.txt", sample = samples),
-        expand("QC/readfiltering_bwa_{sample}.txt", sample = samples)
+        expand("QC/readfiltering_bwa_{sample}.txt", sample = samples),
+        expand("QC/flagstat_dedup_{sample}.txt", sample = samples),
+        expand("QC/readfiltering_dedup_{sample}.txt", sample = samples)
         ]
     if trim:
         file.append(expand("QC/FastQC_trimmed/{sample}{read}_fastqc.html", sample = samples, read = reads))
-    if method in ['chic', 'chic-taps']:
-        file.append([
-            expand("QC/flagstat_dedup_{sample}.txt", sample = samples),
-            expand("QC/readfiltering_dedup_{sample}.txt", sample = samples)
-            ])
+    else:
+        file.append(expand("QC/FastQC/{sample}{read}_fastqc.html", sample = samples, read=reads))
     return(file)
 
 rule multiQC:
@@ -61,15 +59,16 @@ rule scFilterStats:
         bams = expand("dedup_bam/{sample}.bam", sample = samples),
         bai = expand("dedup_bam/{sample}.bam.bai", sample = samples),
         twobit = genome2bit,
-        barcodes = barcode_list,
-        blk = blacklist_bed
+        barcodes = barcode_list
     output: "QC/scFilterStats.txt"
     params:
-        path='/hpc/hub_oudenaarden/vbhardwaj/programs/sincei/bin/scFilterStats.py'
+        path='~/programs/sincei/bin',
+        blacklist = "-bl " + blacklist_bed if blacklist_bed else ""
     log: "logs/scFilterStats.log"
     threads: 15
     conda: CONDA_SHARED_ENV
     shell:
-        "{params.path} -n 0 --motifFilter 'A,TA' --minAlignedFraction 0.6 --GCcontentFilter '0.2,0.8' \
-        --genome2bit {input.twobit} --barcodes {input.barcodes} -bl {input.blk} \
+        "{params.path}/scFilterStats --motifFilter 'A,TA' \
+        --minAlignedFraction 0.6 --GCcontentFilter '0.2,0.8' \
+        --genome2bit {input.twobit} --barcodes {input.barcodes} {params.blacklist} \
         --smartLabels -p {threads} -o {output} -b {input.bams} > {log} 2>&1"
