@@ -6,7 +6,7 @@ def get_multiqc_input():
         expand("QC/readfiltering_dedup_{sample}.txt", sample = samples)
         ]
     if trim:
-        file.append(expand("QC/FastQC_trimmed/{sample}_trimmed{read}_fastqc.html", sample = samples, read = reads))
+        file.append(expand("QC/FastQC_trimmed/{sample}{read}_fastqc.html", sample = samples, read = reads))
     else:
         file.append(expand("QC/FastQC/{sample}{read}_fastqc.html", sample = samples, read=reads))
     return(file)
@@ -62,7 +62,7 @@ rule scFilterStats:
         barcodes = barcode_list
     output: "QC/scFilterStats.txt"
     params:
-        path='~/programs/sincei/bin',
+        path='/hpc/hub_oudenaarden/vbhardwaj/programs/sincei/bin',
         blacklist = "-bl " + blacklist_bed if blacklist_bed else ""
     log: "logs/scFilterStats.log"
     threads: 15

@@ -56,8 +56,8 @@ if trim:
             r1 = "FASTQ/umi_trimmed/umiTrimmed_{sample}"+reads[0]+".fastq.gz",
             r2 = "FASTQ/umi_trimmed/umiTrimmed_{sample}"+reads[1]+".fastq.gz"
         output:
-            r1 = "FASTQ_trimmed/{sample}_trimmed"+reads[0]+".fastq.gz",
-            r2 = "FASTQ_trimmed/{sample}_trimmed"+reads[1]+".fastq.gz",
+            r1 = "FASTQ_trimmed/{sample}"+reads[0]+".fastq.gz",
+            r2 = "FASTQ_trimmed/{sample}"+reads[1]+".fastq.gz",
             QC = "QC/cutadapt/{sample}.out"
         params:
             opts = str(trimmerOptions or '')
@@ -73,9 +73,9 @@ if trim:
 
     rule FastQC_trimmed:
         input:
-            "FASTQ_trimmed/{sample}_trimmed{read}.fastq.gz"
+            "FASTQ_trimmed/{sample}{read}.fastq.gz"
         output:
-            "QC/FastQC_trimmed/{sample}_trimmed{read}_fastqc.html"
+            "QC/FastQC_trimmed/{sample}{read}_fastqc.html"
         params:
             outdir = "QC/FastQC_trimmed"
         log: "logs/FastQC_trimmed.{sample}{read}.out",
@@ -106,8 +106,8 @@ rule chrSizes:
 #"""
 
 filter_cmd = """ awk -v sample={params.sample} 'OFS="\\t" {{ if($0 ~ "^@") {{print $0}} else \
-    {{ split($1,a,"_"); $1=""; print a[1]";BC:Z:"a[2]";RX:Z:"a[3], $0, "SM:Z:"sample"_"a[2], "BC:Z:"a[2], "RX:Z:"a[3], "MI:Z:"a[2]a[3] }} }}' |\
-    samtools sort -@ {threads} -T {params.sample} -o {output} > {log.out} 2>> {log.err}
+    {{ split($1,a,"_"); $1=""; gsub(/^[ \t]/, "", $0); print a[1]";BC:Z:"a[2]";RX:Z:"a[3], $0, "SM:Z:"sample"_"a[2], "BC:Z:"a[2], "RX:Z:"a[3], "MI:Z:"a[2]a[3] }} }}' |\
+    samtools sort -@ {threads} -T {patams.tempDir}/{params.sample} -o {output} > {log.out} 2>> {log.err}
     """
 
 if protocol == "chic":
@@ -118,8 +118,8 @@ else:
 
 rule bam_map:
     input:
-        r1 = lambda wildcards: "FASTQ_trimmed/{sample}_trimmed"+reads[0]+".fastq.gz" if trim else "FASTQ/umi_trimmed/umiTrimmed_{sample}"+reads[0]+".fastq.gz",
-        r2 = lambda wildcards: "FASTQ_trimmed/{sample}_trimmed"+reads[1]+".fastq.gz" if trim else "FASTQ/umi_trimmed/umiTrimmed_{sample}"+reads[1]+".fastq.gz",
+        r1 = lambda wildcards: "FASTQ_trimmed/{sample}"+reads[0]+".fastq.gz" if trim else "FASTQ/umi_trimmed/umiTrimmed_{sample}"+reads[0]+".fastq.gz",
+        r2 = lambda wildcards: "FASTQ_trimmed/{sample}"+reads[1]+".fastq.gz" if trim else "FASTQ/umi_trimmed/umiTrimmed_{sample}"+reads[1]+".fastq.gz",
         idx = bwa_index if protocol == "chic" else hisat2_index+".1.ht2"
     output:
         bam = "mapped_bam/{sample}.bam"

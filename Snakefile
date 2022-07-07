@@ -68,8 +68,7 @@ def run_tchic_fastq(protocol):
 def run_Trimming(trim):
     if trim:
         file_list = [
-        expand("FASTQ_trimmed/{sample}_trimmed{read}.fastq.gz", sample = samples, read = reads),
-        expand("QC/FastQC_trimmed/{sample}_trimmed{read}_fastqc.html", sample = samples, read = reads)
+        expand("QC/FastQC_trimmed/{sample}{read}_fastqc.html", sample = samples, read = reads)
         ]
         return(file_list)
     else:
