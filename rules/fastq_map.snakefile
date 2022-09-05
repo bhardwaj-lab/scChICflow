@@ -107,7 +107,7 @@ rule chrSizes:
 
 filter_cmd = """ awk -v sample={params.sample} 'OFS="\\t" {{ if($0 ~ "^@") {{print $0}} else \
     {{ split($1,a,"_"); $1=""; gsub(/^[ \t]/, "", $0); print a[1]";BC:Z:"a[2]";RX:Z:"a[3], $0, "SM:Z:"sample"_"a[2], "BC:Z:"a[2], "RX:Z:"a[3], "MI:Z:"a[2]a[3] }} }}' |\
-    samtools sort -@ {threads} -T {patams.tempDir}/{params.sample} -o {output} > {log.out} 2>> {log.err}
+    samtools sort -@ {threads} -T {params.tempDir}/{params.sample} -o {output} > {log.out} 2>> {log.err}
     """
 
 if protocol == "chic":
