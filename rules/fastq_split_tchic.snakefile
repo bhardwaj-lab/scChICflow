@@ -20,14 +20,14 @@ else:
             nla=temp("{sample}.NLA.txt"),
             both=temp("{sample}.BOTH.txt"),
             none=temp("{sample}.NONE.txt"),
-            log=temp("QC/{sample}_split_tChIC.log")
+            log="QC/{sample}_split_tChIC.log"
         log: "logs/split_tChIC_{sample}.err"
         params:
             script = os.path.join(workflow.basedir, "tools", "split_fastq.py"),
             prefix="{sample}"
         threads: 20
         resources:
-            mem_mb=200000
+            mem_mb=50000
         shell:
             "{params.script} --ncpus={threads} --infile={input.r1} --prefix={params.prefix} \
             --nla_bc={input.nla} --celseq_bc={input.cs2} > {output.log} 2> {log}"
