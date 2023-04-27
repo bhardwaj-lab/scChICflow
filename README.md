@@ -1,6 +1,6 @@
 # scChICflow
-Workflow for single-cell TAPS analysis
 
+Workflow for processing of [single-cell sortChIC](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9925381/) data.
 
 **Author: @vivekbhr**
 
@@ -9,7 +9,7 @@ Workflow for single-cell TAPS analysis
 ![DAG](./dag.png)
 
 
-## How to run
+## Installation and configuration
 
 ### 1. Clone the repo
 
@@ -35,7 +35,10 @@ The workflow needs
 
 Copy the `config.yaml` from the folder to your output folder (where you intend to run the pipeline) and replace the information with your relevant information.
 
-### 4. Test workflow with test fasta.
+
+## Executing the workflow 
+
+**Test a full run of the workflow with the provided test fasta files.**
 
 This should only take 3-4 minutes. Copy the test fastq files provided with the repo (testdata) folder and run the workflow like this:
 
@@ -50,8 +53,13 @@ mkdir testresults && cd testresults
 .././scChICflow -i ../testdata -o . -c ../config.yaml -j 10 -cl
 ```
 
-
 here **j** is the number of parallel jobs you want to run, **-cl** means submit to cluster (default is to run locally)
+
+## Expected results
+
+
+
+## Notes
 
 ### Technical Notes
   - After running the pipeline, **LOG** file are stored in the **<output>/log/** directory and the workflow top-level log is in scChICflow.log file.
