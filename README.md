@@ -11,27 +11,35 @@ Workflow for processing of [single-cell sortChIC](https://www.ncbi.nlm.nih.gov/p
 
 ## Installation and configuration
 
-### 1. Clone the repo
+We assume that the users have python (>=3.8) installed via a conda packlage manager, such as [miniconda](https://docs.conda.io/en/latest/miniconda.html). 
+
+
+**1. Download this repository**
+
+Move to an appropriate folder and run:
 
 ```
 git clone https://github.com/vivekbhr/scChICflow.git
 ```
 
-### 2. Go to the cloned directory and set up conda env for the workflow
+**2. Go to the cloned directory and set up the tools needed for the workflow**
 
 ```
 cd scChICflow
-conda env create -f env.yaml -n taps
+conda env create -f env.yaml -n chicflow
 ```
+
+Note: Setup of this conda environment has been tested with linux, and conda v23. 
 
 ### 3. configure the config.yaml
 
-The workflow needs
-1) path to the (indexed) genome fasta file
-2) path to BWA index (basename)
-3) path to taps cell barcodes (.txt file)
-4) path to blacklisted regions in the genome (bed file)
-5) Name of "method", ('chic', 'chic-taps' or 'nla-taps')
+The workflow needs user to specify:
+  
+  1) path to the (indexed) genome fasta file
+  2) path to BWA index of the genome (basename)
+  3) path to  cell barcodes (`testdata/chic_384barcodes.txt` file)
+  4) path to a bed file with blacklisted regions in the genome (optional)
+
 
 Copy the `config.yaml` from the folder to your output folder (where you intend to run the pipeline) and replace the information with your relevant information.
 
@@ -40,17 +48,13 @@ Copy the `config.yaml` from the folder to your output folder (where you intend t
 
 **Test a full run of the workflow with the provided test fasta files.**
 
-This should only take 3-4 minutes. Copy the test fastq files provided with the repo (testdata) folder and run the workflow like this:
+This should only take ~10 minutes. Copy the test fastq files provided with the repo (testdata) folder and run the workflow like this:
 
 (provided all files in `config.yaml` are accessible)
 
 ```
-conda activate taps
-## for outsiders:
+conda activate chicflow
 <scChICflow_folder>/scChICflow -i <testdata_folder> -o <output_folder> -c <your_config.yaml> -j <jobs> -cl
-## for van Oudenaarden group:
-mkdir testresults && cd testresults
-.././scChICflow -i ../testdata -o . -c ../config.yaml -j 10 -cl
 ```
 
 here **j** is the number of parallel jobs you want to run, **-cl** means submit to cluster (default is to run locally)
