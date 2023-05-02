@@ -113,6 +113,8 @@ After the workflow runs successfully, the output directory would look like this:
   - After running the pipeline, **LOG** file are stored in the **<output>/log/** directory and the workflow top-level log is in scChICflow.log file.
   - Currently the -o option is not very flexible and and pipeline works only when it's executed in the output directory.
   - cluster configuration, such as memory and cluster submission command are placed in `cluster_config.yaml`, and can be modified to suite the users internal infrastructure.
+	- Installation of sincei: it's possible that conda installs a broken version of sincei package while resolving your conda environment from `env.yaml`. In that case, I'd suggest installing sincei manually, and (if needed) providing the path to sincei binaries under `config.yaml` using the keyword `sincei_path:</path/to/sincei/bin/>`
+
 
 **TAPS analysis notes (before version 0.3) **
   - Quality-trimming of the data seems to remove the NLA3 sequences from the 5'-end of R1, which leads to
