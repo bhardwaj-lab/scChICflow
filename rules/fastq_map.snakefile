@@ -57,21 +57,19 @@ if trim:
             r2 = "FASTQ/umi_trimmed/umiTrimmed_{sample}"+reads[1]+".fastq.gz"
         output:
             r1 = "FASTQ_trimmed/{sample}"+reads[0]+".fastq.gz",
-            r2 = "FASTQ_trimmed/{sample}"+reads[1]+".fastq.gz"
+            r2 = "FASTQ_trimmed/{sample}"+reads[1]+".fastq.gz",
+            QC = "QC/cutadapt/{sample}.out"
         params:
             opts = str(trimmerOptions or '')
-        log:
-            out = "logs/cutadapt.{sample}.out",
-            err = "logs/cutadapt.{sample}.err"
         threads: 8
         conda: CONDA_SHARED_ENV
         shell:
-            "cutadapt -j {threads} -e 0.1 -O 5 \
-            -b TGGAATTCTCGGGTGCCAAGG -B TGGAATTCTCGGGTGCCAAGG \
-            -b ATCTCGTATGCCGTCTTCTGCTTG -B ATCTCGTATGCCGTCTTCTGCTTG \
-            -b GTTCAGAGTTCTACAGTCCGACGATC -B GTTCAGAGTTCTACAGTCCGACGATC \
+            """
+            cutadapt -j {threads} -e 0.1 -O 5 \
+            -n 2 -a TGGAATTCTCGG -a "W{{10}}" -A GATCGTCGGACT -A "W{{10}}" \
             --nextseq-trim=30 {params.opts} \
-            -o {output.r1} -p {output.r2} {input.r1} {input.r2} > {log.out} 2> {log.err}"
+            -o {output.r1} -p {output.r2} {input.r1} {input.r2} > {output.QC}
+            """
 
     rule FastQC_trimmed:
         input:
@@ -107,33 +105,35 @@ rule chrSizes:
 #samtools sort -@ {threads} -T {params.sample} -o {output} > {log.out} 2>> {log.err}
 #"""
 
-filter_cmd = """
-    samtools view -h {params.samfilter} | awk -v sample={params.sample} \
-    'OFS="\\t" {{ if($0 ~ "^@") {{print $0}} else \
-    {{ split($1,a,"_"); $1=""; print a[1]";BC:Z:"a[2]";RX:Z:"a[3], $0, "SM:Z:"sample"_"a[2], "BC:Z:"a[2], "RX:Z:"a[3], "MI:Z:"a[2]a[3] }} }}' |\
-    samtools sort -@ {threads} -T {params.sample} -o {output} > {log.out} 2>> {log.err}
+filter_cmd = """ awk -v sample={params.sample} 'OFS="\\t" {{ if($0 ~ "^@") {{print $0}} else \
+    {{ split($1,a,"_"); $1=""; gsub(/^[ \t]/, "", $0); print a[1]";BC:Z:"a[2]";RX:Z:"a[3], $0, "SM:Z:"sample"_"a[2], "BC:Z:"a[2], "RX:Z:"a[3], "MI:Z:"a[2]a[3] }} }}' |\
+    samtools sort -@ {threads} -T {params.tempDir}/{params.sample} -o {output} > {log.out} 2>> {log.err}
     """
 
 if protocol == "chic":
-    mapping_cmd = "bwa mem -v 1 -T {params.mapq} -t {threads} {input.idx} {input.r1} {input.r2} 2> {log.err} | " + filter_cmd
+    mapping_cmd = "bwa mem -v 1 -T {params.mapq} -t {threads} {input.idx} {input.r1} {input.r2} 2> {log.err} | samtools view -h {params.samfilter} | " + filter_cmd
 else:
-    mapping_cmd = "hisat2 --sensitive --no-spliced-alignment --no-mixed --no-discordant --no-softclip -X 1000 -x {params.idx} -1 {input.r1} -2 {input.r2} 2> {log.err} | " + filter_cmd
+    mapping_cmd = "hisat2 -p {threads} --sensitive --no-spliced-alignment --no-mixed --no-discordant --no-softclip -X 1000 -x {params.idx} -1 {input.r1} -2 {input.r2} 2> {log.err} | samtools view -h {params.samfilter} | " + filter_cmd
+
 
 rule bam_map:
     input:
         r1 = lambda wildcards: "FASTQ_trimmed/{sample}"+reads[0]+".fastq.gz" if trim else "FASTQ/umi_trimmed/umiTrimmed_{sample}"+reads[0]+".fastq.gz",
         r2 = lambda wildcards: "FASTQ_trimmed/{sample}"+reads[1]+".fastq.gz" if trim else "FASTQ/umi_trimmed/umiTrimmed_{sample}"+reads[1]+".fastq.gz",
         idx = bwa_index if protocol == "chic" else hisat2_index+".1.ht2"
-    output: "mapped_bam/{sample}.bam"
+    output:
+        bam = "mapped_bam/{sample}.bam"
     params:
         sample = '{sample}',
         mapq = min_mapq,
         samfilter='-F 4 -F 256',
-        idx = "" if protocol == "chic" else hisat2_index
+        idx = "" if protocol == "chic" else hisat2_index,
+        tempDir = tempDir,
+        gtf = gtf_file
     log:
         out = "logs/bam_map_{sample}.out",
         err = "logs/bam_map_{sample}.err"
-    threads: 10
+    threads: 20
     conda: CONDA_SHARED_ENV
     shell: mapping_cmd
 

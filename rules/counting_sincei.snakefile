@@ -12,12 +12,12 @@ if countRegions == "windows":
         params:
             bin = binSize,
             prefix = "counts/scCounts_"+binSize+"bp_bins",
-            path='~/programs/sincei/bin'
+            path = sincei_path if sincei_path else ""
         log: "logs/sincei_count_windows.err"
         threads: 10
         conda: CONDA_SHARED_ENV
         shell:
-            "{params.path}/scCountReads.py bins \
+            "{params.path}scCountReads bins \
             --minAlignedFraction 0.6 --GCcontentFilter '0.2,0.8' \
             --barcodes {input.barcodes} \
             -bl {input.blk} \
@@ -40,12 +40,12 @@ elif countRegions == "bed" or countRegions == "peaks":
         params:
             bin = binSize,
             prefix = "counts/scCounts_"+countRegions,
-            path='~/programs/sincei/bin'
+            path = sincei_path if sincei_path else ""
         log: "logs/sincei_count_bed.err"
         threads: 10
         conda: CONDA_SHARED_ENV
         shell:
-            "{params.path}/scCountReads.py BED-file \
+            "{params.path}scCountReads BED-file \
             --BED {input.bed} \
             --minAlignedFraction 0.6 --GCcontentFilter '0.2,0.8' \
             --barcodes {input.barcodes} \
