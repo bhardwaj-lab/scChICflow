@@ -51,16 +51,22 @@ include: os.path.join(workflow.basedir, "rules", "QC.snakefile")
 include: os.path.join(workflow.basedir, "rules", "peakcall.snakefile")
 if countRegions:
     include: os.path.join(workflow.basedir, "rules", "counting_sincei.snakefile")
-
+if protocol=='tChIC':
+    include: os.path.join(workflow.basedir, "rules", "map_scRNAseq.snakefile")
 
 ### conditional/optional rules #################################################
 ################################################################################
+outdir_rna='RNA_MAPPING_STAR'
 def run_tchic_fastq(protocol):
     if protocol=='tchic':
         file_list = ["QC/tChIC_split_stats.png",
                      expand("FASTQ_RNA/{sample}{read}.fastq.gz", sample = samples, read = reads),
                      expand("FASTQ_OTHER/{sample}.BOTH{read}.fastq.gz", sample = samples, read = reads),
-                     expand("FASTQ_OTHER/{sample}.NONE{read}.fastq.gz", sample = samples, read = reads)]
+                     expand("FASTQ_OTHER/{sample}.NONE{read}.fastq.gz", sample = samples, read = reads)],
+                     expand(os.path.join(outdir_rna, "STARsolo/{sample}/{sample}.Solo.out/Gene/filtered/matrix.mtx"), sample = samples),
+                     expand(os.path.join(outdir_rna, "bigwigs/{sample}.bw"), sample = samples),
+                     os.path.join(outdir_rna, "QC/multiqc_report.html"),
+                     other]
         return(file_list)
     else:
         return([])
@@ -70,6 +76,11 @@ def run_Trimming(trim):
         file_list = [
         expand("QC/FastQC_trimmed/{sample}{read}_fastqc.html", sample = samples, read = reads)
         ]
+        if protocol=='tchic':
+            file_list.append(
+            expand(os.path.join(outdir_rna, "FASTQ_trimmed/FastQC/{sample}{read}_fastqc.html"),
+                                sample = samples, read = reads)
+            )
         return(file_list)
     else:
         return([])
@@ -84,13 +95,18 @@ def count_regions():
     else:
         return([])
 
-def meth_check():
+def post_mapping_steps():
     file_list = [
-    expand("dedup_bam/{sample}.bam", sample = samples),
-    expand("dedup_bam/{sample}.bam.bai", sample = samples),
-    expand("coverage/{sample}_dedup.cpm.bw", sample = samples),
-    "QC/featureEnrichment.png",
-    "QC/featureEnrichment_biotype.png"]
+        expand("dedup_bam/{sample}.bam", sample = samples),
+        expand("dedup_bam/{sample}.bam.bai", sample = samples),
+        expand("coverage/{sample}_dedup.cpm.bw", sample = samples),
+        "QC/featureEnrichment.png",
+        "QC/featureEnrichment_biotype.png",
+        "QC/plate_plots.pdf",
+        "QC/scFilterStats.txt",
+        "QC/multiqc_report.html"
+    ]
+
     if len(samples) > 1:
         file_list.extend(["QC/bwSummary_bins.npz",
                         "QC/cor-spearman_bins.png"])
@@ -106,11 +122,8 @@ rule all:
         expand("QC/FastQC/{sample}{read}_fastqc.html", sample = samples, read=reads),
         expand("mapped_bam/{sample}.bam", sample = samples),
         expand("mapped_bam/{sample}.bam.bai", sample = samples),
-        meth_check(),
-        count_regions(),
-        "QC/plate_plots.pdf",
-        "QC/scFilterStats.txt",
-        "QC/multiqc_report.html"
+        post_mapping_steps(),
+        count_regions()
 
 ### execute after workflow finished ############################################
 ################################################################################
