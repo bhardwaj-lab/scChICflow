@@ -30,7 +30,7 @@ if downsample:
             seqtk sample -s 100 {input.r2} {params.num_reads} | pigz -p {threads} -9 > {output.r2}
             """
 
-rule umi_trimming:
+rule dna_umi_trimming:
     input:
         r1 = lambda wildcards: "FASTQ/downsampled/downsample_{sample}"+reads[0]+".fastq.gz" if downsample else "FASTQ/{sample}"+reads[0]+".fastq.gz",
         r2 = lambda wildcards: "FASTQ/downsampled/downsample_{sample}"+reads[1]+".fastq.gz" if downsample else "FASTQ/{sample}"+reads[1]+".fastq.gz"
@@ -51,7 +51,7 @@ rule umi_trimming:
 
 
 if trim:
-    rule cutadapt:
+    rule dna_cutadapt:
         input:
             r1 = "FASTQ/umi_trimmed/umiTrimmed_{sample}"+reads[0]+".fastq.gz",
             r2 = "FASTQ/umi_trimmed/umiTrimmed_{sample}"+reads[1]+".fastq.gz"
@@ -71,7 +71,7 @@ if trim:
             -o {output.r1} -p {output.r2} {input.r1} {input.r2} > {output.QC}
             """
 
-    rule FastQC_trimmed:
+    rule dna_FastQC_trimmed:
         input:
             "FASTQ_trimmed/{sample}{read}.fastq.gz"
         output:
@@ -116,7 +116,7 @@ else:
     mapping_cmd = "hisat2 -p {threads} --sensitive --no-spliced-alignment --no-mixed --no-discordant --no-softclip -X 1000 -x {params.idx} -1 {input.r1} -2 {input.r2} 2> {log.err} | samtools view -h {params.samfilter} | " + filter_cmd
 
 
-rule bam_map:
+rule dna_bam_map:
     input:
         r1 = lambda wildcards: "FASTQ_trimmed/{sample}"+reads[0]+".fastq.gz" if trim else "FASTQ/umi_trimmed/umiTrimmed_{sample}"+reads[0]+".fastq.gz",
         r2 = lambda wildcards: "FASTQ_trimmed/{sample}"+reads[1]+".fastq.gz" if trim else "FASTQ/umi_trimmed/umiTrimmed_{sample}"+reads[1]+".fastq.gz",
@@ -138,13 +138,13 @@ rule bam_map:
     shell: mapping_cmd
 
 
-rule bam_index:
+rule dna_bam_index:
     input: "mapped_bam/{sample}.bam"
     output: "mapped_bam/{sample}.bam.bai"
     conda: CONDA_SHARED_ENV
     shell: "samtools index {input}"
 
-rule flagstat_bam:
+rule dna_flagstat_bam:
     input: "mapped_bam/{sample}.bam"
     output: temp("QC/flagstat_bwa_{sample}.txt")
     threads: 1
@@ -152,7 +152,7 @@ rule flagstat_bam:
     shell: "samtools flagstat {input} > {output}"
 
 ## get some stats
-rule readfiltering_bam:
+rule dna_readfiltering_bam:
     input:
         bam = "mapped_bam/{sample}.bam",
         bai = "mapped_bam/{sample}.bam.bai"

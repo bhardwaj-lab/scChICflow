@@ -15,7 +15,7 @@ else:
     trim_dir = indir
 
 if trim:
-    rule cutadapt_rna:
+    rule rna_cutadapt:
         input:
             R1 = os.path.join(indir,"{sample}"+reads[0]+".fastq.gz"),
             R2 = os.path.join(indir,"{sample}"+reads[1]+".fastq.gz")
@@ -38,7 +38,7 @@ if trim:
             -o "{output.R1}" -p "{output.R2}" "{input.R1}" "{input.R2}" > {output.QC}
             """
 
-rule FastQC_rna:
+rule rna_FastQC:
     input:
         os.path.join(trim_dir, "{sample}{read}.fastq.gz")
     output:
@@ -52,7 +52,7 @@ rule FastQC_rna:
     shell: "fastqc -o {params.outdir} {input} > {log.out} 2> {log.err}"
 
 # mapped using STARsolo so possible to split SAM files per cell type later on
-rule mapReads:
+rule rna_mapReads:
     input:
         read1 = os.path.join(trim_dir, "{sample}"+reads[0]+".fastq.gz"),
         read2 = os.path.join(trim_dir, "{sample}"+reads[1]+".fastq.gz")
@@ -67,15 +67,15 @@ rule mapReads:
         star_bugfix='/hpc/hub_oudenaarden/vbhardwaj/programs/STAR-2.7.10a_alpha_220506/source',# use this unil version 2.7.11 is released, to avoid segfault
         gtf_file = gtf_file,
         index = star_index,
-        prefix = "STARsolo/{sample}/{sample}.",
+        prefix = os.path.join(outdir, "STARsolo/{sample}/{sample}."),
         samsort_memory = '2G',
-        sample_dir = "STARsolo/{sample}",
+        sample_dir = os.path.join(outdir, "STARsolo/{sample}"),
         bclist = barcodes_cs2,
         UMIstart = STARsoloCoords[0],
         UMIlen = STARsoloCoords[1],
         CBstart = STARsoloCoords[2],
         CBlen = STARsoloCoords[3],
-        outdir = "STARsolo/",
+        outdir = os.path.join(outdir, "STARsolo/"),
         tempDir = tempDir,
         sample = "{sample}"
     log: os.path.join(outdir, "logs/mapReads_{sample}.err")
@@ -119,7 +119,7 @@ rule mapReads:
         """
 
 #    --soloUMIdedup Exact
-rule filterBAMunique:
+rule rna_filterBAMunique:
     input: os.path.join(outdir, "STARsolo/{sample}/{sample}.Aligned.sortedByCoord.out.bam"),
     output: temp(os.path.join(outdir, "STARsolo/{sample}.uniqueReads.sam"))
     threads: 10
@@ -128,7 +128,7 @@ rule filterBAMunique:
     shell:
         "samtools view -@ {threads} -h -d CB -F 4 -F 256 -F 2048 -q 255 {input} | grep -w -v 'CB:Z:-' > {output}"
 
-rule dedupBAMunique:
+rule rna_dedupBAMunique:
     input: os.path.join(outdir, "STARsolo/{sample}.uniqueReads.sam")
     output:
         bam=os.path.join(outdir, "STARsolo/{sample}.uniqueReads.bam"),
@@ -148,15 +148,15 @@ rule dedupBAMunique:
         --temp-dir {params.tempdir} -L {log} -i -I {input} > {output.bam}
         """
 
-rule indexBAM:
-    input: "STARsolo/{sample}.uniqueReads.bam"
-    output: "STARsolo/{sample}.uniqueReads.bam.bai"
+rule rna_indexBAM:
+    input: os.path.join(outdir, "STARsolo/{sample}.uniqueReads.bam")
+    output: os.path.join(outdir, "STARsolo/{sample}.uniqueReads.bam.bai")
     log: os.path.join(outdir, "logs/indexBAM.{sample}.log")
     threads: 5
     shell: 'samtools index -@ {threads} {input}'
 
 # Get bigwig files of the trimmed fastq files check for A/T stretches
-rule getBW:
+rule rna_getBW:
     input:
         bam = os.path.join(outdir, "STARsolo/{sample}.uniqueReads.bam"),
         idx = os.path.join(outdir, "STARsolo/{sample}.uniqueReads.bam.bai")
@@ -166,7 +166,7 @@ rule getBW:
     shell:
         "bamCoverage -p {threads} --normalizeUsing CPM -b {input.bam} -o {output} > {log} 2>&1"
 
-rule multiQC:
+rule rna_multiQC:
     input: expand(os.path.join(outdir, "STARsolo/{sample}.uniqueReads.bam"), sample = samples)
     output: os.path.join(outdir, "QC/multiqc_report.html")
     params:
