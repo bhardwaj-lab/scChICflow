@@ -62,9 +62,9 @@ By default the workflow runs locally. To run the workflow on an HPC cluster, spe
 
 ### Description of workflow steps
 
-**The following DAG (Directed Acyclic Graph) shows the processing steps inside the workflow**
+**The following DAG (Directed Acyclic Graph) shows the processing steps inside the workflow (with protocol: chic)**
 
-![DAG](./dag.png)
+![DAG](./testdata/chic_dag.png)
 
  - FASTQ: Raw .fastq formatted files from sequencing output. Read 1 from these files contain a 3 base UMI, a 8 base barcode and (expected) "A" base (due to A-tailing) followed by the genomic sequence (cut-site).
  - umi_trimming: This step uses `umi_tools extract`, with the barcode sequence ( `--extract-method=string --bc-pattern=NNNCCCCCCCC`) to remove the UMI and barcode sequence from the read and add them into the read header.
