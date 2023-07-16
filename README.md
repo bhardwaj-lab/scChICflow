@@ -38,7 +38,7 @@ The workflow needs user to specify:
   3) path to  cell barcodes (`testdata/chic_384barcodes.txt` file)
 	4) other parameters and files (see explanation in the `testdata/config.yaml` file)
 
-For the real run, copy the `config.yaml` from the `testdata` folder to the folder where you intend to run the pipeline and replace the information with your relevant information.
+For the real run, copy the `test_config.yaml` from the `testdata` folder to the folder where you intend to run the pipeline and replace the information with your relevant information.
 
 
 ## Executing the workflow
