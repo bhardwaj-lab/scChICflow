@@ -14,6 +14,7 @@ rule umi_dedup:
         mapq = min_mapq,
         sample = "{sample}",
         tmp = tempDir,
+        celltag = 'BC'
 #        paired = "--paired --unmapped-reads use" if protocol == "tchic" else ""
     log:
         out = "logs/umi_dedup_{sample}.out",
@@ -22,7 +23,7 @@ rule umi_dedup:
     conda: CONDA_SHARED_ENV
     shell:
         "umi_tools dedup --mapping-quality {params.mapq} \
-        --per-cell --umi-tag=RX --cell-tag=BC --extract-umi-method=tag \
+        --per-cell --umi-tag=RX --cell-tag={params.celltag} --extract-umi-method=tag \
         --method unique --spliced-is-unique --soft-clip-threshold 2 \
         --output-stats=QC/umi_dedup/{params.sample} \
         --temp-dir={params.tmp} \

@@ -55,7 +55,7 @@ def commonYAMLandLogs(baseDir, args, callingScript):
 
     snakemake_cmd = """
                     TMPDIR={tempDir} PYTHONNOUSERSITE=True snakemake {snakemakeOptions} --directory {workingdir} --snakefile {snakefile} \
-                    --jobs {maxJobs} --configfile {configFile} --keep-going --latency-wait {latency_wait} --conda-frontend mamba
+                    --jobs {maxJobs} --configfile {configFile} --keep-going --latency-wait {latency_wait} 
                     """.format(snakefile=os.path.join(baseDir, "Snakefile"),
                                maxJobs=args.maxJobs,
                                workingdir=args.outdir,

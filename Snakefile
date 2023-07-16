@@ -77,9 +77,9 @@ def run_Trimming(trim):
 def count_regions():
     if countRegions is not None:
         if countRegions == "windows":
-            file_list = "counts/scCounts_"+binSize+"bp_bins.counts.mtx"
+            file_list = "counts/scCounts_"+binSize+"bp_bins.loom"
         if countRegions == "peaks" or countRegions == "bed":
-            file_list = "counts/scCounts_"+countRegions+".counts.mtx"
+            file_list = "counts/scCounts_"+countRegions+".loom"
         return(file_list)
     else:
         return([])
