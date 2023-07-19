@@ -50,7 +50,7 @@ rule plate_plot:
         rscript = os.path.join(workflow.basedir, "tools", "make_plate_plots.R")
     log: "logs/plate_plots.out"
     threads: 1
-    conda: CONDA_SHARED_ENV
+    #conda: CONDA_SHARED_ENV
     shell:
         "Rscript {params.rscript} {input.barcodes} {params.countdir} {output} > {log}"
 

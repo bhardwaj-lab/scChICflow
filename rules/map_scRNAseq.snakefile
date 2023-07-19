@@ -87,7 +87,7 @@ rule rna_mapReads:
     TMPDIR={params.tempDir}
     MYTEMP=$(mktemp -d ${{TMPDIR:-/tmp}}/snakepipes.XXXXXXXXXX);
     ( [ -d {params.sample_dir} ] || mkdir -p {params.sample_dir} )
-    maxIntronLen=`expr $(awk '{{ print $3-$2 }}' {params.index}/sjdbList.fromgtf_file.out.tab | sort -n -r | head -1) + 1`
+    maxIntronLen=`expr $(awk '{{ print $3-$2 }}' {params.index}/sjdbList.fromGTF.out.tab | sort -n -r | head -1) + 1`
     {params.star_bugfix}/STAR --runThreadN {threads} \
     --sjdbOverhang 100 \
     --outSAMunmapped Within \
@@ -99,7 +99,7 @@ rule rna_mapReads:
     --outFileNamePrefix {params.prefix} \
     --outSAMattributes NH HI AS nM MD jM jI MC ch CB UB GX GN \
     --outSAMstrandField intronMotif \
-    --sjdbgtf_filefile {params.gtf_file} \
+    --sjdbGTFfile {params.gtf_file} \
     --outFilterType BySJout \
     --outFilterIntronMotifs RemoveNoncanonical \
     --alignIntronMax ${{maxIntronLen}} \
@@ -114,7 +114,7 @@ rule rna_mapReads:
     --soloStrand Forward \
     --soloCBmatchWLtype Exact \
     --soloType CB_UMI_Simple \
-    --soloUMIdedup NoDedup 2> {log}
+    --soloUMIdedup NoDedup > {log} 2>&1
     rm -rf $MYTEMP
         """
 
