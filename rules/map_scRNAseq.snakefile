@@ -3,11 +3,12 @@
 import os
 import glob
 
-STARsoloCoords = [1, 6, 7, 8] ## UMI start, UMI length, Cell BC start, cell BC length (1-based)
-
-# optional args
 indir='FASTQ_RNA'
 outdir='RNA_MAPPING_STAR'
+STARsoloCoords = [1, 6, 7, 8] ## UMI start, UMI length, Cell BC start, cell BC length (1-based)
+
+# default splice overhang
+splice_overhang = 74
 
 if trim:
     trim_dir = os.path.join(outdir, "FASTQ_trimmed")
@@ -76,6 +77,7 @@ rule rna_mapReads:
         CBstart = STARsoloCoords[2],
         CBlen = STARsoloCoords[3],
         outdir = os.path.join(outdir, "STARsolo/"),
+        spliceLen = splice_overhang,
         tempDir = tempDir,
         sample = "{sample}"
     log: os.path.join(outdir, "logs/mapReads_{sample}.err")
@@ -89,7 +91,7 @@ rule rna_mapReads:
     ( [ -d {params.sample_dir} ] || mkdir -p {params.sample_dir} )
     maxIntronLen=`expr $(awk '{{ print $3-$2 }}' {params.index}/sjdbList.fromGTF.out.tab | sort -n -r | head -1) + 1`
     {params.star_bugfix}/STAR --runThreadN {threads} \
-    --sjdbOverhang 100 \
+    --sjdbOverhang {params.spliceLen} \
     --outSAMunmapped Within \
     --outSAMtype BAM SortedByCoordinate \
     --outBAMsortingBinsN 20 \
@@ -134,18 +136,20 @@ rule rna_dedupBAMunique:
         bam=os.path.join(outdir, "STARsolo/{sample}.uniqueReads.bam"),
         qc=os.path.join(outdir, "QC/umi_dedup/{sample}_per_umi_per_position.tsv")
     params:
-        sample = "{sample}",
+        umistats = os.path.join(outdir, "QC/umi_dedup/{sample}"),
         tempdir= tempDir
-    log: os.path.join(outdir, "logs/filterBAM.{sample}.log")
+    log:
+        out = os.path.join(outdir, "logs/filterBAM.{sample}.log"),
+        err = os.path.join(outdir, "logs/filterBAM.{sample}.err")
     threads: 1
     resources:
-        mem_mb=80000
+        mem_mb=100000
     shell:
         """
         umi_tools dedup --per-cell --cell-tag CB --umi-tag UB --extract-umi-method tag \
         --method unique --spliced-is-unique \
-        --output-stats=QC/umi_dedup/{params.sample} \
-        --temp-dir {params.tempdir} -L {log} -i -I {input} > {output.bam}
+        --output-stats={params.umistats} \
+        --temp-dir {params.tempdir} -L {log.out} -i -I {input} > {output.bam} 2> {log.err}
         """
 
 rule rna_indexBAM:
