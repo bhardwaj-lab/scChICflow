@@ -174,8 +174,9 @@ rule rna_multiQC:
     input: expand(os.path.join(outdir, "STARsolo/{sample}.uniqueReads.bam"), sample = samples)
     output: os.path.join(outdir, "QC/multiqc_report.html")
     params:
-        outdir = os.path.join(outdir, "QC")
+        qc_outdir = os.path.join(outdir, "QC"),
+        qc_indir = outdir
     log: os.path.join(outdir, "logs/multiqc.log")
     threads: 1
     shell:
-        "multiqc -f -o {params.outdir} . > {log} 2>&1"
+        "multiqc -f -o {params.qc_outdir} {params.qc_indir} > {log} 2>&1"

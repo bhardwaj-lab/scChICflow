@@ -15,14 +15,15 @@ rule multiQC:
     input: get_multiqc_input()
     output: "QC/multiqc_report.html"
     params:
-        outdir = "QC"
+        outdir = "QC",
+        ignore = lambda wildcards: "FASTQ/*" if trim else ""
     log:
         out = "logs/multiqc.out",
         err = "logs/multiqc.err"
     threads: 1
     conda: CONDA_SHARED_ENV
     shell:
-        "multiqc -f -o {params.outdir} {params.outdir} > {log.out} 2> {log.err}"
+        "multiqc -f {params.ignore} -o {params.outdir} {params.outdir} > {log.out} 2> {log.err}"
 
 ## count deduplicated reads per cell
 rule countFrags_perCell:
