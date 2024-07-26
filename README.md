@@ -1,6 +1,6 @@
 # scChICflow
 
-Workflow for processing of [single-cell sortChIC](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9925381/) data.
+Workflow for processing of [single-cell sortChIC](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9925381/) and [single-cell TChIC](https://www.biorxiv.org/content/10.1101/2024.05.09.593364v1.abstract) data.
 
 **Author: Vivek Bhardwaj (@vivekbhr)**
 
@@ -27,6 +27,12 @@ mamba env create -f env.yaml -n chicflow
 ```
 
 **Note:** Setup of this conda environment has been tested with linux, and conda v23. If it takes too long and/or creates conflicts, try removing the conflicting packages from the `env.yaml` file and installing them manually afterwards.
+
+Additionally the tool `split_fastq.py` needs to be installed manually for the TChIC workflow:
+
+```
+cd scChICflow/tools && python splitfastq_install.py build_ext --inplace && cd -
+```
 
 
 ### 3. Prepare the config.yaml
