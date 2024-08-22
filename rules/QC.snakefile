@@ -63,13 +63,13 @@ rule scFilterStats:
         barcodes = barcode_list
     output: "QC/scFilterStats.txt"
     params:
-        path = sincei_path if sincei_path else "",
+        #path = sincei_path if sincei_path else "",
         blacklist = "-bl " + blacklist_bed if blacklist_bed else ""
     log: "logs/scFilterStats.log"
     threads: 15
     conda: CONDA_SHARED_ENV
     shell:
-        "{params.path}scFilterStats --motifFilter 'A,TA' \
+        "scFilterStats --motifFilter 'A,TA' \
         --minAlignedFraction 0.6 --GCcontentFilter '0.2,0.8' \
         --genome2bit {input.twobit} --barcodes {input.barcodes} {params.blacklist} \
         --smartLabels -p {threads} -o {output} -b {input.bams} > {log} 2>&1"
