@@ -6,7 +6,7 @@ Workflow for processing of [single-cell sortChIC](https://www.ncbi.nlm.nih.gov/p
 
 ## Installation and configuration
 
-We assume that the users have python (>=3.8) installed via a conda package manager, such as [miniconda](https://docs.conda.io/en/latest/miniconda.html). Please check the instructions on how to install conda on that website. I'd recommend installing [mamba](https://anaconda.org/conda-forge/mamba) to resolve the package dependencies.
+We assume that the users have python (>=3.8) installed via a conda package manager, such as [miniconda](https://docs.conda.io/en/latest/miniconda.html) or [miniforge] (https://github.com/conda-forge/miniforge). Please check the instructions on how to install conda on that website.
 
 
 ### 1. Download this repository
@@ -19,11 +19,11 @@ git clone https://github.com/vivekbhr/scChICflow.git
 
 ### 2. Set up the tools needed for the workflow
 
-Go to the scChICflow directory and install the tools using mamba.
+Go to the scChICflow directory and install the tools using conda.
 
 ```
 cd scChICflow
-mamba env create -f env.yaml -n chicflow
+conda env create -f env.yaml -n chicflow
 ```
 
 **Note:** Setup of this conda environment has been tested with linux, and conda v23. If it takes too long and/or creates conflicts, try removing the conflicting packages from the `env.yaml` file and installing them manually afterwards.
@@ -40,7 +40,7 @@ cd scChICflow/tools && python splitfastq_install.py build_ext --inplace && cd -
 The workflow needs user to specify:
 
   1) path to the (indexed) genome fasta file
-  2) path to BWA index of the genome (basename)
+  2) path to BWA index of the genome (basename) or to the HISAT2  index on the genome depending on the dna aligner chosen (`dna_aligner` flag specified on `config.yaml`)
   3) path to  cell barcodes (`testdata/chic_384barcodes.txt` file)
 	4) other parameters and files (see explanation in the `testdata/config.yaml` file)
 
@@ -63,8 +63,22 @@ Here **j** is the number of parallel jobs you want to run. For other parameters,
 
 ### Running on HPC cluster
 
-By default the workflow runs locally. To run the workflow on an HPC cluster, specify the execution command (that uses a manager like slurm/SGE) under `cluster_config.yaml` and specity **-cl** for `scChICflow` command.
+By default the workflow runs locally. To run the workflow on an HPC cluster, the `-cl` flag needs to be added to the `scChICflow` command. Running scChICflow on the cluster also requires a `profile/config.yaml` file.
+We provide an example `profile/config.yaml` file in this repository that requires some changes to run a specific cluster (e.g.: adjusting the temporary directory and email for job updates).
+The `profile/config.yaml` also allows the user to allocate different resources per rule following [Snakemake's resource allocation rules] (https://snakemake.readthedocs.io/en/stable/snakefiles/rules.html). We provide our recommended defaults in the example `profile/config.yaml`.
+scChICflow can be run on a cluster can be run directly from the command line or by submitting a **"master job"** script (example in `example_SLURM`). In both cases, scChICflow will submit individual cluster jobs per rule.
 
+In summary, to run scChICflow on the cluster:
+
+  1. Make adjustments to `profile/config.yaml` for your cluster
+  2. Run scChICflow with the `-cl` flag either:
+  * On the **command line**
+  * Via a **"master job"** script (example at `example_SLURM`) and submit the script to the cluster
+
+Both approaches will run each Snakemake rule as a separate cluster job.
+
+#### Note on running HISAT2 on the cluster
+Unfortunately, the current version of **HISAT2** (2.2.1) has a hard-coded directory for temporary files at `/tmp`. This may cause issues depending on cluster setup, since many clusters allocate temporary directory space at other locations such as `/scratch/$JOB_ID`. In case of HISAT2 issues, we recommend using the **bwa** aligner instead (specified via the `dna_aligner` flag on the workflow `config.yaml` file).
 
 ### Description of workflow steps
 
