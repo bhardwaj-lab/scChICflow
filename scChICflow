@@ -13,6 +13,7 @@ import sys
 import textwrap
 import yaml
 import subprocess
+
 ### DEFINE FUNCTIONS TO LOAD AND RUN Workflow ###
 ########################################################
 
@@ -34,7 +35,6 @@ def commonYAMLandLogs(baseDir, args, callingScript):
     Merge dictionaries, write YAML files, construct the snakemake command
     and create the DAG
     """
-    #snakemake_path = os.path.dirname(os.path.abspath(callingScript))
     os.makedirs(args.outdir, exist_ok=True)
     if isinstance(args.snakemakeOptions, list):
         args.snakemakeOptions = ' '.join(args.snakemakeOptions)
@@ -44,23 +44,13 @@ def commonYAMLandLogs(baseDir, args, callingScript):
     config.update(vars(args))  # This allows modifications of args after handling a user config file to still make it to the YAML given to snakemake!
     write_configfile(os.path.join(args.outdir, 'scChICflow_config.yaml'), config)
 
-    ## load cluster config
-    cluster_config = load_configfile(os.path.join(baseDir, "cluster_config.yaml"))
-    ## add log Directory
-    if re.search("\\{cluster_logDir\\}", cluster_config["cluster_cmd"]):
-        os.makedirs(os.path.join(args.outdir, cluster_config["cluster_logDir"]), exist_ok=True)
-        cluster_config["cluster_cmd"] = re.sub("\\{cluster_logDir\\}", cluster_config["cluster_logDir"], cluster_config["cluster_cmd"])
-    else:
-        sys.exit("\nPlease provide a key 'cluster_logDir' and value in the cluster configuration file!\n")
-
     snakemake_cmd = """
                     TMPDIR={tempDir} PYTHONNOUSERSITE=True snakemake {snakemakeOptions} --directory {workingdir} --snakefile {snakefile} \
-                    --jobs {maxJobs} --configfile {configFile} --keep-going --latency-wait {latency_wait}
+                    --jobs {maxJobs} --configfile {configFile} --rerun-incomplete
                     """.format(snakefile=os.path.join(baseDir, "Snakefile"),
                                maxJobs=args.maxJobs,
                                workingdir=args.outdir,
                                tempDir=args.tempDir,
-                               latency_wait=cluster_config["latency_wait"],
                                snakemakeOptions=str(args.snakemakeOptions or ''),
                                configFile=os.path.join(args.outdir, 'scChICflow_config.yaml')).split()
 
@@ -68,12 +58,7 @@ def commonYAMLandLogs(baseDir, args, callingScript):
         snakemake_cmd.append("--printshellcmds")
 
     if args.cluster:
-        ## always --use-conda on cluster
-        #snakemake_cmd += ["--use-conda --conda-frontend conda"]
-        #snakemake_cmd += ["--conda-prefix " + args.conda_dir]
-        snakemake_cmd += ["--cluster-config",
-                          os.path.join(baseDir, "cluster_config.yaml"),
-                          "--cluster", "'" + cluster_config["cluster_cmd"], "'"]
+        snakemake_cmd += ["--profile", os.path.join(baseDir, "profile")]
 
 
     return " ".join(snakemake_cmd)
@@ -152,7 +137,8 @@ def parse_args(defaults=None):
     parser.add_argument("-t", "--tempDir",
                           dest="tempDir",
                           help="Directory to store temporary files. (default: '%(default)s')",
-                          default='/tmp/')
+                          default='/tmp/'
+                          )
 
     parser.add_argument("-q", "--minQ",
                           dest="min_mapq",
@@ -191,7 +177,7 @@ def parse_args(defaults=None):
                          dest="cluster",
                          action="store_true",
                          default=False,
-                         help="run workflow on the cluster (requires configuration of cluster_cmd in the config) (default: '%(default)s')")
+                         help="run workflow on the cluster (requires configuration of profile/config.yaml) (default: '%(default)s')")
 
     parser.add_argument("-cd", "--conda-dir",
                          dest="conda_dir",
