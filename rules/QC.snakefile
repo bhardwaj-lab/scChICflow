@@ -15,14 +15,15 @@ rule multiQC:
     input: get_multiqc_input()
     output: "QC/multiqc_report.html"
     params:
-        outdir = "QC"
+        outdir = "QC",
+        ignore = lambda wildcards: "FASTQ/*" if trim else ""
     log:
         out = "logs/multiqc.out",
         err = "logs/multiqc.err"
     threads: 1
     conda: CONDA_SHARED_ENV
     shell:
-        "multiqc -f -o {params.outdir} {params.outdir} > {log.out} 2> {log.err}"
+        "multiqc -f {params.ignore} -o {params.outdir} {params.outdir} > {log.out} 2> {log.err}"
 
 ## count deduplicated reads per cell
 rule countFrags_perCell:
@@ -50,7 +51,7 @@ rule plate_plot:
         rscript = os.path.join(workflow.basedir, "tools", "make_plate_plots.R")
     log: "logs/plate_plots.out"
     threads: 1
-    conda: CONDA_SHARED_ENV
+    #conda: CONDA_SHARED_ENV
     shell:
         "Rscript {params.rscript} {input.barcodes} {params.countdir} {output} > {log}"
 
@@ -62,13 +63,13 @@ rule scFilterStats:
         barcodes = barcode_list
     output: "QC/scFilterStats.txt"
     params:
-        path = sincei_path if sincei_path else "",
+        #path = sincei_path if sincei_path else "",
         blacklist = "-bl " + blacklist_bed if blacklist_bed else ""
     log: "logs/scFilterStats.log"
     threads: 15
     conda: CONDA_SHARED_ENV
     shell:
-        "{params.path}scFilterStats --motifFilter 'A,TA' \
+        "scFilterStats --motifFilter 'A,TA' \
         --minAlignedFraction 0.6 --GCcontentFilter '0.2,0.8' \
         --genome2bit {input.twobit} --barcodes {input.barcodes} {params.blacklist} \
         --smartLabels -p {threads} -o {output} -b {input.bams} > {log} 2>&1"

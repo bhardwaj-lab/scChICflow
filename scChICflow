@@ -55,7 +55,7 @@ def commonYAMLandLogs(baseDir, args, callingScript):
 
     snakemake_cmd = """
                     TMPDIR={tempDir} PYTHONNOUSERSITE=True snakemake {snakemakeOptions} --directory {workingdir} --snakefile {snakefile} \
-                    --jobs {maxJobs} --configfile {configFile} --keep-going --latency-wait {latency_wait} 
+                    --jobs {maxJobs} --configfile {configFile} --keep-going --latency-wait {latency_wait}
                     """.format(snakefile=os.path.join(baseDir, "Snakefile"),
                                maxJobs=args.maxJobs,
                                workingdir=args.outdir,
@@ -69,8 +69,8 @@ def commonYAMLandLogs(baseDir, args, callingScript):
 
     if args.cluster:
         ## always --use-conda on cluster
-        snakemake_cmd += ["--use-conda --conda-frontend mamba"]
-        snakemake_cmd += ["--conda-prefix " + args.conda_dir]
+        #snakemake_cmd += ["--use-conda --conda-frontend conda"]
+        #snakemake_cmd += ["--conda-prefix " + args.conda_dir]
         snakemake_cmd += ["--cluster-config",
                           os.path.join(baseDir, "cluster_config.yaml"),
                           "--cluster", "'" + cluster_config["cluster_cmd"], "'"]
