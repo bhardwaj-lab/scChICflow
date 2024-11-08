@@ -52,8 +52,8 @@ if trim:
             r1 = "FASTQ/umi_trimmed/umiTrimmed_{sample}"+reads[0]+".fastq.gz",
             r2 = "FASTQ/umi_trimmed/umiTrimmed_{sample}"+reads[1]+".fastq.gz"
         output:
-            r1 = "FASTQ_trimmed/{sample}"+reads[0]+".fastq.gz",
-            r2 = "FASTQ_trimmed/{sample}"+reads[1]+".fastq.gz",
+            r1 = temp("FASTQ_trimmed/{sample}"+reads[0]+".fastq.gz"),
+            r2 = temp("FASTQ_trimmed/{sample}"+reads[1]+".fastq.gz"),
             QC = "QC/cutadapt/{sample}.out"
         params:
             opts = str(trimmerOptions or '')
@@ -115,7 +115,7 @@ rule dna_bam_map:
         r2 = lambda wildcards: "FASTQ_trimmed/{sample}"+reads[1]+".fastq.gz" if trim else "FASTQ_umi_trimmed/umiTrimmed_{sample}"+reads[1]+".fastq.gz",
         idx = hisat2_index+".1.ht2" if dna_aligner == "hisat2" else bwa_index
     output:
-        bam = "mapped_bam/{sample}.bam"
+        bam = temp("mapped_bam/{sample}.bam")
     params:
         sample = '{sample}',
         mapq = min_mapq,
@@ -131,7 +131,7 @@ rule dna_bam_map:
 
 rule dna_bam_index:
     input: "mapped_bam/{sample}.bam"
-    output: "mapped_bam/{sample}.bam.bai"
+    output: temp("mapped_bam/{sample}.bam.bai")
     shell: "samtools index {input}"
 
 rule dna_flagstat_bam:
