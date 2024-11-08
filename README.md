@@ -77,7 +77,10 @@ In summary, to run scChICflow on the cluster:
 
 Both approaches will run each Snakemake rule as a separate cluster job.
 
-#### Note on running HISAT2 on the cluster
+#### *Note on `--tempDir` on the cluster*
+If the `--tempDir` flag does not match the `tmpdir` resource specified in `profile/config.yaml` under `default-resources`, the latter will take precedence.
+
+#### *Note on running HISAT2 on the cluster*
 Unfortunately, the current version of **HISAT2** (2.2.1) has a hard-coded directory for temporary files at `/tmp`. This may cause issues depending on cluster setup, since many clusters allocate temporary directory space at other locations such as `/scratch/$JOB_ID`. In case of HISAT2 issues, we recommend using the **bwa** aligner instead (specified via the `dna_aligner` flag on the workflow `config.yaml` file).
 
 ### Description of workflow steps

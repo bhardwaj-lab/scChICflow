@@ -77,7 +77,6 @@ rule rna_mapReads:
         CBlen = STARsoloCoords[3],
         outdir = os.path.join(outdir, "STARsolo/"),
         spliceLen = splice_overhang,
-        tempDir = tempDir,
         sample = "{sample}"
     log: os.path.join(outdir, "logs/mapReads_{sample}.err")
     threads: 20
@@ -85,38 +84,38 @@ rule rna_mapReads:
         mem_mb=100000
     shell:
         """
-    TMPDIR={params.tempDir}
-    MYTEMP=$(mktemp -d ${{TMPDIR:-/tmp}}/snakepipes.XXXXXXXXXX);
-    ( [ -d {params.sample_dir} ] || mkdir -p {params.sample_dir} )
-    maxIntronLen=`expr $(awk '{{ print $3-$2 }}' {params.index}/sjdbList.fromGTF.out.tab | sort -n -r | head -1) + 1`
-    STAR --runThreadN {threads} \
-    --sjdbOverhang {params.spliceLen} \
-    --outSAMunmapped Within \
-    --outSAMtype BAM SortedByCoordinate \
-    --outBAMsortingBinsN 20 \
-    --genomeDir {params.index} \
-    --readFilesIn {input.read2} {input.read1}\
-    --readFilesCommand zcat \
-    --outFileNamePrefix {params.prefix} \
-    --outSAMattributes NH HI AS nM MD jM jI MC ch CB UB GX GN \
-    --outSAMstrandField intronMotif \
-    --sjdbGTFfile {params.gtf_file} \
-    --outFilterType BySJout \
-    --outFilterIntronMotifs RemoveNoncanonical \
-    --alignIntronMax ${{maxIntronLen}} \
-    --alignSJoverhangMin 8 \
-    --soloFeatures Gene Velocyto \
-    --soloCBstart {params.CBstart} \
-    --soloCBlen {params.CBlen} \
-    --soloUMIstart {params.UMIstart} \
-    --soloUMIlen {params.UMIlen} \
-    --soloCBwhitelist {params.bclist} \
-    --soloBarcodeReadLength 0 \
-    --soloStrand Forward \
-    --soloCBmatchWLtype Exact \
-    --soloType CB_UMI_Simple \
-    --soloUMIdedup NoDedup > {log} 2>&1
-    rm -rf $MYTEMP
+        TMPDIR={config[tempDir]}
+        MYTEMP=$(mktemp -d ${{TMPDIR:-/tmp}}/snakepipes.XXXXXXXXXX);
+        ( [ -d {params.sample_dir} ] || mkdir -p {params.sample_dir} )
+        maxIntronLen=`expr $(awk '{{ print $3-$2 }}' {params.index}/sjdbList.fromGTF.out.tab | sort -n -r | head -1) + 1`
+        STAR --runThreadN {threads} \
+        --sjdbOverhang {params.spliceLen} \
+        --outSAMunmapped Within \
+        --outSAMtype BAM SortedByCoordinate \
+        --outBAMsortingBinsN 20 \
+        --genomeDir {params.index} \
+        --readFilesIn {input.read2} {input.read1}\
+        --readFilesCommand zcat \
+        --outFileNamePrefix {params.prefix} \
+        --outSAMattributes NH HI AS nM MD jM jI MC ch CB UB GX GN \
+        --outSAMstrandField intronMotif \
+        --sjdbGTFfile {params.gtf_file} \
+        --outFilterType BySJout \
+        --outFilterIntronMotifs RemoveNoncanonical \
+        --alignIntronMax ${{maxIntronLen}} \
+        --alignSJoverhangMin 8 \
+        --soloFeatures Gene Velocyto \
+        --soloCBstart {params.CBstart} \
+        --soloCBlen {params.CBlen} \
+        --soloUMIstart {params.UMIstart} \
+        --soloUMIlen {params.UMIlen} \
+        --soloCBwhitelist {params.bclist} \
+        --soloBarcodeReadLength 0 \
+        --soloStrand Forward \
+        --soloCBmatchWLtype Exact \
+        --soloType CB_UMI_Simple \
+        --soloUMIdedup NoDedup > {log} 2>&1
+        rm -rf $MYTEMP
         """
 
 #    --soloUMIdedup Exact
@@ -136,7 +135,6 @@ rule rna_dedupBAMunique:
         qc=os.path.join(outdir, "QC/umi_dedup/{sample}_per_umi_per_position.tsv")
     params:
         umistats = os.path.join(outdir, "QC/umi_dedup/{sample}"),
-        tempdir= tempDir
     log:
         out = os.path.join(outdir, "logs/filterBAM.{sample}.log"),
         err = os.path.join(outdir, "logs/filterBAM.{sample}.err")
@@ -145,10 +143,11 @@ rule rna_dedupBAMunique:
         mem_mb=100000
     shell:
         """
+        TMPDIR={config[tempDir]}
         umi_tools dedup --per-cell --cell-tag CB --umi-tag UB --extract-umi-method tag \
         --method unique --spliced-is-unique \
         --output-stats={params.umistats} \
-        --temp-dir {params.tempdir} -L {log.out} -i -I {input} > {output.bam} 2> {log.err}
+        --temp-dir $TMPDIR -L {log.out} -i -I {input} > {output.bam} 2> {log.err}
         """
 
 rule rna_indexBAM:

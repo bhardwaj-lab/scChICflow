@@ -42,7 +42,6 @@ def commonYAMLandLogs(baseDir, args, callingScript):
     # save to configs.yaml in outdir
     config = load_configfile(args.config)
     config.update(vars(args))  # This allows modifications of args after handling a user config file to still make it to the YAML given to snakemake!
-    write_configfile(os.path.join(args.outdir, 'scChICflow_config.yaml'), config)
 
     snakemake_cmd = """
                     TMPDIR={tempDir} PYTHONNOUSERSITE=True snakemake {snakemakeOptions} --directory {workingdir} --snakefile {snakefile} \
@@ -58,8 +57,15 @@ def commonYAMLandLogs(baseDir, args, callingScript):
         snakemake_cmd.append("--printshellcmds")
 
     if args.cluster:
-        snakemake_cmd += ["--profile", os.path.join(baseDir, "profile")]
+        snakemake_cmd += ["--profile", os.path.join(baseDir, "profile/")]
+        cluster_config = load_configfile(os.path.join(baseDir, "profile/config.yaml"))
 
+        if str(args.tempDir) != str(cluster_config["default-resources"]["tmpdir"]):
+            print("!!!WARNING: tempDir in the cluster configuration does not match --tempDir. --tempDir will be overridden.\n")
+            config["tempDir"] = str(cluster_config["default-resources"]["tmpdir"])
+
+    # Write workflow config file
+    write_configfile(os.path.join(args.outdir, 'scChICflow_config.yaml'), config)
 
     return " ".join(snakemake_cmd)
 

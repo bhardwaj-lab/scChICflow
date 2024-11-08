@@ -13,35 +13,33 @@ rule umi_dedup:
     params:
         mapq = min_mapq,
         sample = "{sample}",
-        tmp = tempDir,
         celltag = 'BC'
-#        paired = "--paired --unmapped-reads use" if protocol == "tchic" else ""
+        #paired = "--paired --unmapped-reads use" if protocol == "tchic" else ""
     log:
         out = "logs/umi_dedup_{sample}.out",
         err = "logs/umi_dedup_{sample}.err"
     threads: 1
-    conda: CONDA_SHARED_ENV
     shell:
-        "umi_tools dedup --mapping-quality {params.mapq} \
-        --per-cell --umi-tag=RX --cell-tag={params.celltag} --extract-umi-method=tag \
+        """
+        umi_tools dedup --mapping-quality {params.mapq} \
+        --per-cell --umi-tag RX --cell-tag {params.celltag} --extract-umi-method tag \
         --method unique --spliced-is-unique --soft-clip-threshold 2 \
         --output-stats=QC/umi_dedup/{params.sample} \
-        --temp-dir={params.tmp} \
-        -I {input.bam} -L {log.out} > {output.bam} 2> {log.err}"
+        --temp-dir $TMPDIR \
+        -I {input.bam} -L {log.out} > {output.bam} 2> {log.err}
+        """
 
 
 rule index_dedup:
     input: "dedup_bam/{sample}.bam"
     output: "dedup_bam/{sample}.bam.bai"
     threads: 1
-    conda: CONDA_SHARED_ENV
     shell: "samtools index {input}"
 
 rule flagstat_dedup:
     input: "dedup_bam/{sample}.bam"
     output: temp("QC/flagstat_dedup_{sample}.txt")
     threads: 1
-    conda: CONDA_SHARED_ENV
     shell: "samtools flagstat {input} > {output}"
 
 rule readfiltering_dedup:
@@ -54,7 +52,6 @@ rule readfiltering_dedup:
         blacklist = "-bl " + blacklist_bed if blacklist_bed else ""
     log: "logs/readfiltering_dedup_{sample}.out",
     threads: 10
-    conda: CONDA_SHARED_ENV
     shell:
         "estimateReadFiltering -p {threads} --minMappingQuality {params.mapq} \
         {params.blacklist} -b {input.bam} > {output} 2> {log}"
@@ -71,7 +68,6 @@ rule bamCoverage_dedup:
         binsize = bw_binsize if bw_binsize else 100
     log: "logs/bamCoverage_dedup_{sample}.out"
     threads: 10
-    conda: CONDA_SHARED_ENV
     shell:
         "bamCoverage --normalizeUsing CPM -bs {params.binsize} -p {threads} \
         -ignore {params.ignore} {params.blacklist} \
@@ -87,7 +83,6 @@ rule plotEnrichment:
     params:
         blacklist = "-bl " + blacklist_bed if blacklist_bed else ""
     threads: 8
-    conda: CONDA_SHARED_ENV
     shell:
         "plotEnrichment -p {threads} --BED {input.gtf} {params.blacklist} \
         --smartLabels --variableScales --perSample -b {input.bam} -o {output}  > {log} 2>&1"
@@ -103,7 +98,6 @@ rule plotEnrichment_biotype:
         blacklist = "-bl " + blacklist_bed if blacklist_bed else "",
         attributeKey='gene_type'
     threads: 8
-    conda: CONDA_SHARED_ENV
     shell:
         "plotEnrichment -p {threads} --BED {input.gtf} {params.blacklist} \
         --attributeKey {params.attributeKey} --smartLabels --variableScales --perSample \
@@ -118,7 +112,6 @@ rule bwSummary:
         blacklist = "-bl " + blacklist_bed if blacklist_bed else "",
         binsize = bw_binsize*10 if bw_binsize else 10000
     threads: 8
-    conda: CONDA_SHARED_ENV
     shell:
         "multiBigwigSummary bins -bs {params.binsize} -p {threads} {params.blacklist} \
         --smartLabels -b {input.bw} -o {output}  > {log} 2>&1"
@@ -128,7 +121,6 @@ rule plotCorrelation:
     output: "QC/cor-spearman_bins.png"
     log: "logs/plotCorrelation.log"
     threads: 1
-    conda: CONDA_SHARED_ENV
     shell:
         "plotCorrelation -p heatmap -c spearman \
         --skipZeros --removeOutliers \

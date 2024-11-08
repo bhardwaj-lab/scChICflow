@@ -1,7 +1,6 @@
-# scChICflow snakemake profile configuration
+# scChICflow snakemake profile configuration for SLURM cluster execution
 jobname: '{rule}.{wildcards}.{jobid}'
 executor: slurm
-# mode: remote
 
 keep-going: True
 printshellcmds: True
