@@ -11,7 +11,6 @@ rule macs2:
         size = genomeSize
     log: "logs/macs2_{sample}.out"
     threads: 1
-    conda: CONDA_SHARED_ENV
     shell:
         "macs2 callpeak -q 0.1 -t {input.bam} -f BAM -g {params.size} --keep-dup all \
         --outdir {params.outdir} --name {params.sample} 2> {log}"
@@ -22,7 +21,6 @@ rule macs2_bed:
     params:
         qvalue = "1"# -log10(0.1)
     threads: 1
-    conda: CONDA_SHARED_ENV
     shell:
         """
         awk 'OFS="\\t" {{ if ($9 >= {params.qvalue}) {{print $1,$2,$3,$4,$5,$6}} }}' {input} > {output}
@@ -32,7 +30,6 @@ rule macs2_bed_union:
     input: expand("macs2_peaks/{sample}_peaks.bed", sample = samples)
     output: "macs2_peaks/peaks_union.bed"
     threads: 1
-    conda: CONDA_SHARED_ENV
     shell:
         """
         cat {input} | sort -k1,1 -k2n,2 | \
@@ -49,7 +46,6 @@ rule macs2_bed_union:
 #            min_mq = min_mapq
 #        log: "logs/count_inpeaks_{sample}.out"
 #        threads: 1
-#        conda: CONDA_SHARED_ENV
 #        shell:
 #            "bamToCountTable.py -o {output} -bedfile {input.peak} \
 #            -minMQ {params.min_mq} --dedup --filterXA -sampleTags SM \
