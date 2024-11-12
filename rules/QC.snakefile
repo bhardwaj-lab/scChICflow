@@ -21,7 +21,6 @@ rule multiQC:
         out = "logs/multiqc.out",
         err = "logs/multiqc.err"
     threads: 1
-    conda: CONDA_SHARED_ENV
     shell:
         "multiqc -f {params.ignore} -o {params.outdir} {params.outdir} > {log.out} 2> {log.err}"
 
@@ -33,7 +32,6 @@ rule countFrags_perCell:
     output: "counts/{sample}.per_barcode.tsv"
     log: "logs/counts_{sample}.out"
     threads: 1
-    conda: CONDA_SHARED_ENV
     shell:
         """
         samtools view {input.bam} | grep -o "[[:space:]]BC:Z:[ATGC]*" | \
@@ -51,7 +49,6 @@ rule plate_plot:
         rscript = os.path.join(workflow.basedir, "tools", "make_plate_plots.R")
     log: "logs/plate_plots.out"
     threads: 1
-    #conda: CONDA_SHARED_ENV
     shell:
         "Rscript {params.rscript} {input.barcodes} {params.countdir} {output} > {log}"
 
@@ -67,7 +64,6 @@ rule scFilterStats:
         blacklist = "-bl " + blacklist_bed if blacklist_bed else ""
     log: "logs/scFilterStats.log"
     threads: 15
-    conda: CONDA_SHARED_ENV
     shell:
         "scFilterStats --motifFilter 'A,TA' \
         --minAlignedFraction 0.6 --GCcontentFilter '0.2,0.8' \

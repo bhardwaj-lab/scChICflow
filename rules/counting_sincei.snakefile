@@ -12,7 +12,6 @@ if countRegions == "windows":
             #path = sincei_path if sincei_path else ""
         log: "logs/sincei_count_windows.err"
         threads: 10
-        conda: CONDA_SHARED_ENV
         shell:
             "scCountReads bins \
             --minAlignedFraction 0.6 --GCcontentFilter '0.2,0.8' \
@@ -37,7 +36,6 @@ elif countRegions == "bed" or countRegions == "peaks":
             #path = sincei_path if sincei_path else ""
         log: "logs/sincei_count_bed.err"
         threads: 10
-        conda: CONDA_SHARED_ENV
         shell:
             "scCountReads BED-file \
             --BED {input.bed} \

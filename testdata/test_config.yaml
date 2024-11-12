@@ -11,6 +11,8 @@ trim: True
 trimmerOptions: "-u 1 -u -2 -U -2 -q 30 --trim-n --minimum-length 20"
 # List of cell barcodes
 barcode_list: 'test_annotations/chic_384barcodes.txt'
+# dna aligner (bwa or hisat2)
+dna_aligner: bwa
 # path to BWA index (basename)
 bwa_index: 'test_annotations/mm10_chr1-118-120M.fa'
 # Path to genome fasta file

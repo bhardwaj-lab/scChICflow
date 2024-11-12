@@ -1,0 +1,39 @@
+#!/bin/bash
+#SBATCH --job-name=your_scChICflow              # Job name
+#SBATCH --output=/your/log.log                  # Stdout file
+#SBATCH --error=/your/error.err                 # Error file
+#SBATCH --ntasks=1                              # Number of tasks
+#SBATCH --mem=4G                                # Total memory limit for the master job (does not require a high allocation)
+#SBATCH --time=48:00:00                         # Time limit hrs:min:sec for the master job.
+#SBATCH --mail-user=your@email.com              # Email address
+#SBATCH --mail-type=ALL                         # Email notification: when the job begins, ends, or fails
+
+# This is an example for the master job to run scChICflow on a cluster using the SLURM job scheduler.
+# Each individual snakemake job will be run as a separate SLURM job.
+
+# The resource (ntasks, runtime, memory, etc.) constraints in this script only affect the master job.
+# The resources for individual snakemake rules can be set in profile/config.yaml.
+
+CONDA_SH=/your/conda.sh             # Path to your conda.sh file
+TEMPDIR=/your/temp/directory        # Temporary files directory
+
+OUTPUT_DIR=/your/output/directory   # Directory where the output files will be saved
+FASTQ_DIR=/your/input/directory     # Directory containing the input fastq files
+
+CONFIG_YAML=/your/config.yaml       # scChICflow yaml configuration file
+MAX_JOBS=30                         # Maximum number of SLURM jobs to run at the same time
+
+
+source $CONDA_SH
+conda activate chicflow
+
+cd $DATA_DIR
+echo "Running scChICflow. Job ID: $SLURM_JOB_ID"
+
+/hpc/uu_bhardwaj/group/fsanchogomez/programs/scChICflow_dev/scChICflow \
+    -i $FASTQ_DIR \
+    -o $OUTPUT_DIR \
+    -c $CONFIG_YAML \
+    -j $MAX_JOBS \
+    -t $TEMPDIR \
+    -cl                 # Run on the cluster
