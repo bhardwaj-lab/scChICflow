@@ -99,14 +99,14 @@ rule chrSizes:
 
 filter_cmd = """ awk -v sample={params.sample} 'OFS="\\t" {{ if($0 ~ "^@") {{print $0}} else \
     {{ split($1,a,"_"); $1=""; gsub(/^[ \t]/, "", $0); print a[1]";BC:Z:"a[2]";RX:Z:"a[3], $0, "SM:Z:"sample"_"a[2], "BC:Z:"a[2], "RX:Z:"a[3], "MI:Z:"a[2]a[3] }} }}' |\
-    samtools sort -@ {params.cores} -T $TMPDIR/{params.sample} -o {output.bam} > {log.out} 2>> {log.err}
+    samtools sort -@ {threads} -T $TMPDIR/{params.sample} -o {output.bam} > {log.out} 2>> {log.err}
     """
 
 if dna_aligner == "hisat2" or dna_aligner == "hisat":
     dna_aligner = "hisat2"
-    mapping_cmd = "hisat2 -p {params.cores} --sensitive --no-spliced-alignment --no-mixed --no-discordant --no-softclip -X 1000 -x {params.idx} -1 {input.r1} -2 {input.r2} 2> {log.err} | samtools view -h {params.samfilter} | " + filter_cmd
+    mapping_cmd = "hisat2 -p {threads} --sensitive --no-spliced-alignment --no-mixed --no-discordant --no-softclip -X 1000 -x {params.idx} -1 {input.r1} -2 {input.r2} 2> {log.err} | samtools view -h {params.samfilter} | " + filter_cmd
 else:
-    mapping_cmd = "bwa mem -v 1 -T {params.mapq} -t {params.cores} {input.idx} {input.r1} {input.r2} 2> {log.err} | samtools view -h {params.samfilter} | " + filter_cmd
+    mapping_cmd = "bwa mem -v 1 -T {params.mapq} -t {threads} {input.idx} {input.r1} {input.r2} 2> {log.err} | samtools view -h {params.samfilter} | " + filter_cmd
 
 
 rule dna_bam_map:
@@ -122,10 +122,10 @@ rule dna_bam_map:
         samfilter='-F 4 -F 256',
         idx = hisat2_index if dna_aligner == "hisat2" else "",
         gtf = gtf_file,
-        cores = 24
     log:
         out = "logs/bam_map_{sample}.out",
         err = "logs/bam_map_{sample}.err"
+    threads: 24
     shell: mapping_cmd
 
 
