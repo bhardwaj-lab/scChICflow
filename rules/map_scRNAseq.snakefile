@@ -84,7 +84,6 @@ rule rna_mapReads:
         mem_mb=100000
     shell:
         """
-        TMPDIR={config[tempDir]}
         MYTEMP=$(mktemp -d ${{TMPDIR:-/tmp}}/snakepipes.XXXXXXXXXX);
         ( [ -d {params.sample_dir} ] || mkdir -p {params.sample_dir} )
         maxIntronLen=`expr $(awk '{{ print $3-$2 }}' {params.index}/sjdbList.fromGTF.out.tab | sort -n -r | head -1) + 1`
@@ -143,7 +142,6 @@ rule rna_dedupBAMunique:
         mem_mb=100000
     shell:
         """
-        TMPDIR={config[tempDir]}
         umi_tools dedup --per-cell --cell-tag CB --umi-tag UB --extract-umi-method tag \
         --method unique --spliced-is-unique \
         --output-stats={params.umistats} \

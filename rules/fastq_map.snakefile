@@ -121,7 +121,7 @@ rule dna_bam_map:
         mapq = min_mapq,
         samfilter='-F 4 -F 256',
         idx = hisat2_index if dna_aligner == "hisat2" else "",
-        gtf = gtf_file
+        gtf = gtf_file,
     log:
         out = "logs/bam_map_{sample}.out",
         err = "logs/bam_map_{sample}.err"

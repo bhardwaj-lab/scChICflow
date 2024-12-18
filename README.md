@@ -83,6 +83,20 @@ If the `--tempDir` flag does not match the `tmpdir` resource specified in `profi
 #### *Note on running HISAT2 on the cluster*
 Unfortunately, the current version of **HISAT2** (2.2.1) has a hard-coded directory for temporary files at `/tmp`. This may cause issues depending on cluster setup, since many clusters allocate temporary directory space at other locations such as `/scratch/$JOB_ID`. In case of HISAT2 issues, we recommend using the **bwa** aligner instead (specified via the `dna_aligner` flag on the workflow `config.yaml` file).
 
+As of HISAT 2.2.1, there is a workaround: in the HISAT2 installation the file `hisat2/hisat2` can be modified by changing line 241 from
+
+```
+my $temp_dir = "/tmp";
+```
+
+to
+
+```
+my $temp_dir = File::Spec->tmpdir();
+```
+
+This makes HISAT2 use the `$TMPDIR` environment variable instead of the hardcoded `/tmp`.
+
 ### Description of workflow steps
 
 **The following DAG (Directed Acyclic Graph) shows the processing steps inside the workflow (with protocol: chic)**
