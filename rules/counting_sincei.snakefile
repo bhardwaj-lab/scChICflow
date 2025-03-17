@@ -38,7 +38,7 @@ elif countRegions == "bed" or countRegions == "peaks":
         log: "logs/sincei_count_bed.err"
         threads: 10
         shell:
-            "scCountReads BED-file \
+            "scCountReads features \
             --BED {input.bed} \
             {params.filters} \
             --barcodes {input.barcodes} \
