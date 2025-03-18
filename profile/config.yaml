@@ -8,7 +8,7 @@ latency-wait: 600 # seconds
 retries: 2
 
 # To use the conda environment, source your conda.sh and activate the environment before each job
-precommand: 'source /path/to/conda.sh && conda activate chicflow'
+precommand: 'conda activate chicflow'
 
 # Default resources
 default-resources:
@@ -16,8 +16,8 @@ default-resources:
   cpus_per_task: 8
   mem_mb: f"{32768 * attempt}"
   disk_mb: f"{input.size_mb * (1 + attempt)}"
-  tmpdir: "'/path/to/tmpdir'" # Change this to your tmpdir
-  slurm_extra: "'--mail-type=FAIL --mail-user=your@email.com'" # Change this to your email
+  tmpdir: "'/hpc/uu_bhardwaj/shared_data/tempdir'" # Change this to your tmpdir(NOTE: Do not remove the single quotes)
+  slurm_extra: #"'--mail-type=FAIL --mail-user=your@email.com'" # Change this to your email
 
 # Set resources per rule
 set-resources:
