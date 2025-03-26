@@ -1,14 +1,15 @@
 if protocol == "chic":
     rule FASTQ:
-          input:
-              r1=indir+"/{sample}"+reads[0]+ext,
-              r2=indir+"/{sample}"+reads[1]+ext
-          output:
-              r1="FASTQ/{sample}"+reads[0]+".fastq.gz",
-              r2="FASTQ/{sample}"+reads[1]+".fastq.gz"
-          shell:
-              "( [ -f {output.r1} ] || ln -s -r {input.r1} {output.r1} ) && \
-               ( [ -f {output.r2} ] || ln -s -r {input.r2} {output.r2} )"
+        input:
+            r1=indir+"/{sample}"+reads[0]+ext,
+            r2=indir+"/{sample}"+reads[1]+ext
+        output:
+            r1="FASTQ/{sample}"+reads[0]+".fastq.gz",
+            r2="FASTQ/{sample}"+reads[1]+".fastq.gz"
+        conda: CONDA_SHARED_ENV
+        shell:
+            "( [ -f {output.r1} ] || ln -s -r {input.r1} {output.r1} ) && \
+             ( [ -f {output.r2} ] || ln -s -r {input.r2} {output.r2} )"
 else:
     rule split_tChIC:
         input:
@@ -28,6 +29,7 @@ else:
         threads: 10
         resources:
             mem_mb=20000
+        conda: CONDA_SHARED_ENV
         shell:
             "{params.script} --ncpus={threads} --infile={input.r1} --prefix={params.prefix} \
             --nla_bc={input.nla} --celseq_bc={input.cs2} > {output.log} 2> {log}"
@@ -44,6 +46,7 @@ else:
             r1="FASTQ/{sample}"+reads[0]+".fastq.gz",
             r2="FASTQ/{sample}"+reads[1]+".fastq.gz"
         log: "logs/dnaSplit_{sample}.log"
+        conda: CONDA_SHARED_ENV
         shell:
             split_cmd
 
@@ -56,6 +59,7 @@ else:
             r1="FASTQ_RNA/{sample}"+reads[0]+".fastq.gz",
             r2="FASTQ_RNA/{sample}"+reads[1]+".fastq.gz"
         log: "logs/rnaSplit_{sample}.log"
+        conda: CONDA_SHARED_ENV
         shell:
             split_cmd
 
@@ -68,6 +72,7 @@ else:
             r1="FASTQ_OTHER/{sample}.BOTH"+reads[0]+".fastq.gz",
             r2="FASTQ_OTHER/{sample}.BOTH"+reads[1]+".fastq.gz"
         log: "logs/bothSplit_{sample}.log"
+        conda: CONDA_SHARED_ENV
         shell:
             split_cmd
 
@@ -80,6 +85,7 @@ else:
             r1="FASTQ_OTHER/{sample}.NONE"+reads[0]+".fastq.gz",
             r2="FASTQ_OTHER/{sample}.NONE"+reads[1]+".fastq.gz"
         log: "logs/noneSplit_{sample}.log"
+        conda: CONDA_SHARED_ENV
         shell:
             split_cmd
 
@@ -89,5 +95,6 @@ else:
         params:
             indir = "QC",
             rscript = os.path.join(workflow.basedir, "tools", "plot_tChIC_split.R")
+        conda: CONDA_SHARED_ENV
         shell:
             "Rscript {params.rscript} {output} {params.indir}"
