@@ -56,8 +56,8 @@ else:
             r2=indir+"/{sample}"+reads[1]+ext,
             names="{sample}.CS2.txt"
         output:
-            r1="FASTQ_RNA/{sample}"+reads[0]+".fastq.gz",
-            r2="FASTQ_RNA/{sample}"+reads[1]+".fastq.gz"
+            r1=temp("FASTQ_RNA/{sample}"+reads[0]+".fastq.gz"),
+            r2=temp("FASTQ_RNA/{sample}"+reads[1]+".fastq.gz")
         log: "logs/rnaSplit_{sample}.log"
         conda: CONDA_SHARED_ENV
         shell:
@@ -69,8 +69,8 @@ else:
             r2=indir+"/{sample}"+reads[1]+ext,
             names="{sample}.BOTH.txt"
         output:
-            r1="FASTQ_OTHER/{sample}.BOTH"+reads[0]+".fastq.gz",
-            r2="FASTQ_OTHER/{sample}.BOTH"+reads[1]+".fastq.gz"
+            r1=temp("FASTQ_OTHER/{sample}.BOTH"+reads[0]+".fastq.gz"),
+            r2=temp("FASTQ_OTHER/{sample}.BOTH"+reads[1]+".fastq.gz")
         log: "logs/bothSplit_{sample}.log"
         conda: CONDA_SHARED_ENV
         shell:
@@ -82,8 +82,8 @@ else:
             r2=indir+"/{sample}"+reads[1]+ext,
             names="{sample}.NONE.txt"
         output:
-            r1="FASTQ_OTHER/{sample}.NONE"+reads[0]+".fastq.gz",
-            r2="FASTQ_OTHER/{sample}.NONE"+reads[1]+".fastq.gz"
+            r1=temp("FASTQ_OTHER/{sample}.NONE"+reads[0]+".fastq.gz"),
+            r2=temp("FASTQ_OTHER/{sample}.NONE"+reads[1]+".fastq.gz")
         log: "logs/noneSplit_{sample}.log"
         conda: CONDA_SHARED_ENV
         shell:
