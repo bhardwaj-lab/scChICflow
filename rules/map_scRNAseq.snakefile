@@ -44,7 +44,8 @@ rule rna_FastQC:
     input:
         os.path.join(trim_dir, "{sample}{read}.fastq.gz")
     output:
-        os.path.join(trim_dir, "FastQC/{sample}{read}_fastqc.html")
+        html = temp(os.path.join(trim_dir, "FastQC/{sample}{read}_fastqc.html")),
+        zip = temp(os.path.join(trim_dir, "FastQC/{sample}{read}_fastqc.zip"))
     params:
         outdir = os.path.join(trim_dir, "FastQC")
     log:
@@ -60,12 +61,12 @@ rule rna_mapReads:
         read1 = os.path.join(trim_dir, "{sample}"+reads[0]+".fastq.gz"),
         read2 = os.path.join(trim_dir, "{sample}"+reads[1]+".fastq.gz")
     output:
-        bam = os.path.join(outdir, "STARsolo/{sample}/{sample}.Aligned.sortedByCoord.out.bam"),
+        bam = temp(os.path.join(outdir, "STARsolo/{sample}/{sample}.Aligned.sortedByCoord.out.bam")),
         raw_counts = os.path.join(outdir, "STARsolo/{sample}/{sample}.Solo.out/Gene/raw/matrix.mtx"),
         filtered_counts = os.path.join(outdir, "STARsolo/{sample}/{sample}.Solo.out/Gene/filtered/matrix.mtx"),
         filtered_bc = os.path.join(outdir, "STARsolo/{sample}/{sample}.Solo.out/Gene/filtered/barcodes.tsv"),
-        tmpdir=temp(directory(os.path.join(outdir, "STARsolo/{sample}/{sample}._STARtmp"))),
-        tmpgenome=temp(directory(os.path.join(outdir, "STARsolo/{sample}/{sample}._STARgenome")))
+        tmpdir = temp(directory(os.path.join(outdir, "STARsolo/{sample}/{sample}._STARtmp"))),
+        tmpgenome = temp(directory(os.path.join(outdir, "STARsolo/{sample}/{sample}._STARgenome")))
     params:
         gtf_file = gtf_file,
         index = star_index,
@@ -134,8 +135,8 @@ rule rna_filterBAMunique:
 rule rna_dedupBAMunique:
     input: os.path.join(outdir, "STARsolo/{sample}.uniqueReads.sam")
     output:
-        bam=os.path.join(outdir, "STARsolo/{sample}.uniqueReads.bam"),
-        qc=os.path.join(outdir, "QC/umi_dedup/{sample}_per_umi_per_position.tsv")
+        bam = os.path.join(outdir, "STARsolo/{sample}.uniqueReads.bam"),
+        qc = os.path.join(outdir, "QC/umi_dedup/{sample}_per_umi_per_position.tsv")
     params:
         umistats = os.path.join(outdir, "QC/umi_dedup/{sample}"),
     log:
