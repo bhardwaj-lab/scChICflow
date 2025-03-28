@@ -66,9 +66,9 @@ def commonYAMLandLogs(baseDir, args, callingScript):
 
     if args.cluster:
         snakemake_cmd += ["--profile", os.path.join(baseDir, "profiles/cluster")]
-    
-    else:
-        snakemake_cmd += ["--profile", os.path.join(baseDir, "profiles/local")]
+
+    if args.noMappedBam:
+        config['noMappedBam'] = args.noMappedBam
 
     # Write workflow config file
     write_configfile(os.path.join(args.outdir, 'scChICflow_config.yaml'), config)
@@ -175,6 +175,12 @@ def parse_args(defaults=None):
                           type=str,
                           required=False,
                           default=None)
+    
+    parser.add_argument("-nmb", "--noMappedBam",
+                         dest="noMappedBam",
+                         action="store_true",
+                         default=False,
+                         help="Do not keep 'mapped_bam' output files (default: '%(default)s')")
 
     parser.add_argument("-s", "--snakemakeOptions",
                           dest="snakemakeOptions",
@@ -188,7 +194,7 @@ def parse_args(defaults=None):
                          dest="cluster",
                          action="store_true",
                          default=False,
-                         help="run workflow on the cluster (requires configuration of profile/config.yaml) (default: '%(default)s')")
+                         help="run workflow on the cluster (requires configuration of profiles/cluster/config.yaml) (default: '%(default)s')")
 
     parser.add_argument("-cd", "--conda-dir",
                          dest="conda_dir",

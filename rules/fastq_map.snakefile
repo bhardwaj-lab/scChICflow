@@ -114,26 +114,46 @@ if dna_aligner == "hisat2" or dna_aligner == "hisat":
 else:
     mapping_cmd = "bwa mem -v 1 -T {params.mapq} -t {threads} {input.idx} {input.r1} {input.r2} 2> {log.err} | samtools view -h {params.samfilter} | " + filter_cmd
 
-
-rule dna_bam_map:
-    input:
-        r1 = lambda wildcards: "FASTQ_trimmed/{sample}"+reads[0]+".fastq.gz" if trim else "FASTQ_umi_trimmed/umiTrimmed_{sample}"+reads[0]+".fastq.gz",
-        r2 = lambda wildcards: "FASTQ_trimmed/{sample}"+reads[1]+".fastq.gz" if trim else "FASTQ_umi_trimmed/umiTrimmed_{sample}"+reads[1]+".fastq.gz",
-        idx = hisat2_index+".1.ht2" if dna_aligner == "hisat2" else bwa_index
-    output:
-        bam = temp("mapped_bam/{sample}.bam")
-    params:
-        sample = '{sample}',
-        mapq = min_mapq,
-        samfilter='-F 4 -F 256',
-        idx = hisat2_index if dna_aligner == "hisat2" else "",
-        gtf = gtf_file,
-    log:
-        out = "logs/bam_map_{sample}.out",
-        err = "logs/bam_map_{sample}.err"
-    threads: 24
-    conda: CONDA_SHARED_ENV
-    shell: mapping_cmd
+if noMappedBam:
+    rule dna_bam_map:
+        input:
+            r1 = lambda wildcards: "FASTQ_trimmed/{sample}"+reads[0]+".fastq.gz" if trim else "FASTQ_umi_trimmed/umiTrimmed_{sample}"+reads[0]+".fastq.gz",
+            r2 = lambda wildcards: "FASTQ_trimmed/{sample}"+reads[1]+".fastq.gz" if trim else "FASTQ_umi_trimmed/umiTrimmed_{sample}"+reads[1]+".fastq.gz",
+            idx = hisat2_index+".1.ht2" if dna_aligner == "hisat2" else bwa_index
+        output:
+            bam = temp("mapped_bam/{sample}.bam")
+        params:
+            sample = '{sample}',
+            mapq = min_mapq,
+            samfilter='-F 4 -F 256',
+            idx = hisat2_index if dna_aligner == "hisat2" else "",
+            gtf = gtf_file,
+        log:
+            out = "logs/bam_map_{sample}.out",
+            err = "logs/bam_map_{sample}.err"
+        threads: 24
+        conda: CONDA_SHARED_ENV
+        shell: mapping_cmd
+else:
+    rule dna_bam_map:
+        input:
+            r1 = lambda wildcards: "FASTQ_trimmed/{sample}"+reads[0]+".fastq.gz" if trim else "FASTQ_umi_trimmed/umiTrimmed_{sample}"+reads[0]+".fastq.gz",
+            r2 = lambda wildcards: "FASTQ_trimmed/{sample}"+reads[1]+".fastq.gz" if trim else "FASTQ_umi_trimmed/umiTrimmed_{sample}"+reads[1]+".fastq.gz",
+            idx = hisat2_index+".1.ht2" if dna_aligner == "hisat2" else bwa_index
+        output:
+            bam = "mapped_bam/{sample}.bam"
+        params:
+            sample = '{sample}',
+            mapq = min_mapq,
+            samfilter='-F 4 -F 256',
+            idx = hisat2_index if dna_aligner == "hisat2" else "",
+            gtf = gtf_file,
+        log:
+            out = "logs/bam_map_{sample}.out",
+            err = "logs/bam_map_{sample}.err"
+        threads: 24
+        conda: CONDA_SHARED_ENV
+        shell: mapping_cmd
 
 
 rule dna_bam_index:
