@@ -6,7 +6,7 @@ Workflow for processing of [single-cell sortChIC](https://www.ncbi.nlm.nih.gov/p
 
 ## Installation and configuration
 
-We assume that the users have python (>=3.8) installed via a conda package manager, such as [miniconda](https://docs.conda.io/en/latest/miniconda.html) or [miniforge] (https://github.com/conda-forge/miniforge). Please check the instructions on how to install conda on that website.
+We assume that the users have python (>=3.8) installed via a conda package manager, such as [miniconda](https://docs.conda.io/en/latest/miniconda.html) or [miniforge](https://github.com/conda-forge/miniforge). Please check the instructions on how to install conda on that website.
 
 
 ### 1. Download this repository
@@ -26,7 +26,7 @@ cd scChICflow
 conda env create -f env.yaml -n chicflow
 ```
 
-**Note:** Setup of this conda environment has been tested with linux, and conda v23. If it takes too long and/or creates conflicts, try removing the conflicting packages from the `env.yaml` file and installing them manually afterwards.
+**Note:** Setup of this conda environment has been tested with linux, and conda v24. If it takes too long and/or creates conflicts, try removing the conflicting packages from the `env.yaml` file and installing them manually afterwards.
 
 Additionally the tool `split_fastq.py` needs to be installed manually for the TChIC workflow:
 
@@ -61,29 +61,29 @@ conda activate chicflow
 
 Here **j** is the number of parallel jobs you want to run. For other parameters, check out `scChICflow --help`
 
-### Running on HPC cluster
+### Running on an HPC cluster
 
-By default the workflow runs locally. To run the workflow on an HPC cluster, the `-cl` flag needs to be added to the `scChICflow` command. Running scChICflow on the cluster also requires a `profile/config.yaml` file.
-We provide an example `profile/config.yaml` file in this repository that requires some changes to run a specific cluster (e.g.: adjusting the temporary directory and email for job updates).
-The `profile/config.yaml` also allows the user to allocate different resources per rule following [Snakemake's resource allocation rules] (https://snakemake.readthedocs.io/en/stable/snakefiles/rules.html). We provide our recommended defaults in the example `profile/config.yaml`.
-scChICflow can be run on a cluster can be run directly from the command line or by submitting a **"master job"** script (example in `example_SLURM`). In both cases, scChICflow will submit individual cluster jobs per rule.
+By default, the scChICflow runs locally. To run the workflow on an HPC cluster, the `-cl` flag needs to be added to the `scChICflow` command. Running scChICflow on the cluster also requires a `profiles/cluster/config.yaml` file.
+We provide an example `profiles/cluster/config.yaml` file in this repository that requires some changes to run a specific cluster (e.g.: adjusting the temporary directory, conda path, and email for job updates).
+This also allows the user to allocate different resources per rule following [Snakemake's resource allocation rules](https://snakemake.readthedocs.io/en/stable/snakefiles/rules.html). We provide our recommended defaults in `profiles/cluster/config.yaml`.
+scChICflow can be run on a cluster directly from the command line or by submitting a **"master job"** script (example in `example_SLURM`). In both cases, scChICflow will submit one cluster job per rule execution.
 
 In summary, to run scChICflow on the cluster:
 
-  1. Make adjustments to `profile/config.yaml` for your cluster
+  1. Make adjustments to `profiles/cluster/config.yaml` for your cluster
   2. Run scChICflow with the `-cl` flag either:
   * On the **command line**
-  * Via a **"master job"** script (example at `example_SLURM`) and submit the script to the cluster
+  * By submitting a **"master job"** script (example at `example_SLURM`) and submit the script to the cluster
 
-Both approaches will run each Snakemake rule as a separate cluster job.
+Both approaches will run each Snakemake rule as a separate job.
 
-#### *Note on `--tempDir` on the cluster*
-If the `--tempDir` flag does not match the `tmpdir` resource specified in `profile/config.yaml` under `default-resources`, the latter will take precedence.
+#### *Note on `--tempDir` for cluster execution*
+The `--tempDir` flag does not affect cluster execution. To adjust the `tempDir` for cluster execution change the `tmpdir` option in `profiles/cluster/config.yaml` under `default_resources`.
 
 #### *Note on running HISAT2 on the cluster*
-Unfortunately, the current version of **HISAT2** (2.2.1) has a hard-coded directory for temporary files at `/tmp`. This may cause issues depending on cluster setup, since many clusters allocate temporary directory space at other locations such as `/scratch/$JOB_ID`. In case of HISAT2 issues, we recommend using the **bwa** aligner instead (specified via the `dna_aligner` flag on the workflow `config.yaml` file).
+Unfortunately, the current version of **HISAT2** (2.2.1) is hard-coded to always use `/tmp` as `tempDir`. This may cause issues depending on cluster setup, since many clusters allocate temporary directory space at other locations such as `/scratch/$JOB_ID`. In case of HISAT2 issues, we recommend using the **bwa** aligner instead (specified via the `dna_aligner` flag on the workflow `config.yaml` file).
 
-As of HISAT 2.2.1, there is a workaround: in the HISAT2 installation the file `hisat2/hisat2` can be modified by changing line 241 from
+As of HISAT 2.2.1, there is a workaround: in the HISAT2 installation, the file `hisat2/hisat2` can be modified by changing line 241 from
 
 ```
 my $temp_dir = "/tmp";
@@ -162,10 +162,10 @@ After the workflow runs successfully, the output directory would look like this:
 
 **Technical Notes**
 
-  - After running the pipeline, **LOG** file are stored in the **<output>/log/** directory and the workflow top-level log is in scChICflow.log file.
+  - After running the pipeline, **LOG** files are stored in the **<output>/log/** directory and the workflow top-level log is in scChICflow.log file.
   - Currently the -o option is not very flexible and and pipeline works only when it's executed in the output directory.
-  - Cluster configuration, such as memory and cluster submission command are placed in `cluster_config.yaml`, and can be modified to suite the users internal infrastructure.
-	- Installation of [sincei package](https://sincei.readthedocs.io/en/latest/): it's possible that conda installs a broken version of sincei package while resolving your conda environment from `env.yaml`. In that case, I'd suggest installing sincei manually, and (if needed) providing the path to sincei binaries under `config.yaml` using the keyword `sincei_path:</path/to/sincei/bin/>`
+  - Cluster configuration, such as memory and cluster submission command are placed in `profiles/cluster/config.yaml`, and can be modified to suite the users internal infrastructure.
+  - Installation of [sincei package](https://sincei.readthedocs.io/en/latest/): it's possible that conda installs a broken version of sincei package while resolving your conda environment from `env.yaml`. In that case, I'd suggest installing sincei manually, and (if needed) providing the path to sincei binaries under `config.yaml` using the keyword `sincei_path:</path/to/sincei/bin/>`
 
 
 **TAPS analysis notes (before version 0.3)**
