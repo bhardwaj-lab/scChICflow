@@ -4,8 +4,8 @@ if protocol == "chic":
             r1=indir+"/{sample}"+reads[0]+ext,
             r2=indir+"/{sample}"+reads[1]+ext
         output:
-            r1="FASTQ/{sample}"+reads[0]+".fastq.gz",
-            r2="FASTQ/{sample}"+reads[1]+".fastq.gz"
+            r1=temp("FASTQ/{sample}"+reads[0]+".fastq.gz"),
+            r2=temp("FASTQ/{sample}"+reads[1]+".fastq.gz")
         conda: CONDA_SHARED_ENV
         shell:
             "( [ -f {output.r1} ] || ln -s -r {input.r1} {output.r1} ) && \
@@ -43,8 +43,8 @@ else:
             r2=indir+"/{sample}"+reads[1]+ext,
             names="{sample}.NLA.txt"
         output:
-            r1="FASTQ/{sample}"+reads[0]+".fastq.gz",
-            r2="FASTQ/{sample}"+reads[1]+".fastq.gz"
+            r1=temp("FASTQ/{sample}"+reads[0]+".fastq.gz"),
+            r2=temp("FASTQ/{sample}"+reads[1]+".fastq.gz")
         log: "logs/dnaSplit_{sample}.log"
         conda: CONDA_SHARED_ENV
         shell:
