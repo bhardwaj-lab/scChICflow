@@ -16,7 +16,7 @@ rule multiQC:
     output: "QC/multiqc_report.html"
     params:
         outdir = "QC",
-        ignore = lambda wildcards: "FASTQ/*" if trim else ""
+        ignore = lambda wildcards: "-x FASTQ/*" if trim else ""
     log:
         out = "logs/multiqc.out",
         err = "logs/multiqc.err"
