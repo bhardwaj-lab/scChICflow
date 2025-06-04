@@ -1,43 +1,55 @@
-## workflow parameters
-# file name extension
+## Workflow parameters
+# File name extension
 ext: '.fastq.gz'
 # The suffix added to reads
 reads: ["_R1","_R2"]
-# No. of reads to downsample (leave empty for no downsampling)
+# Number of reads to downsample (leave empty for no downsampling)
 downsample:
 # Trim the reads?
 trim: True
 # Additional optional passed to trimmer (default assumes nextSeq data with Illumina smallRNA barcodes)
 trimmerOptions: "-u 1 -u -2 -U -2 -q 30 --trim-n --minimum-length 20"
+# Protocol (tchic or chic)
+protocol: tchic
 # List of cell barcodes
 barcode_list: 'test_annotations/chic_384barcodes.txt'
-# dna aligner (bwa or hisat2)
+# If protocol is tchic, provide CS2 cell barcodes
+barcodes_cs2: 'test_annotations/celseq2.whitelist'
+# DNA aligner (bwa or hisat2)
 dna_aligner: bwa
-# path to BWA index (basename)
-bwa_index: 'test_annotations/mm10_chr1-118-120M.fa'
+# If dna aligner is BWA, path to BWA index (basename)
+bwa_index: 'test_annotations/mm39_chr1-118-120M.fa'
+# If dna aligner is HISAT2, path to HISAT2 index (basename)
+hisat2_index:
+# If protocol is tchic, path to star index directory for RNA
+star_index: 'test_annotations/STAR_index_mm39_chr1-118-120M'
 # Path to genome fasta file
-genome_fasta: 'test_annotations/mm10_chr1-118-120M.fa'
-# Path to GTF file
-gtf_file: 'test_annotations/mm10_genes.gtf'
-# regions to remove from signal extraction
+genome_fasta: 'test_annotations/mm39_chr1-118-120M.fa'
+# Path to genome GTF file
+gtf_file: 'test_annotations/mm39_chr1-118-120M.gtf'
+# Regions to remove from signal extraction
 blacklist_bed:
-# genome size (for MACS2 peak calling)
-genomeSize: 2913022398
-# two bit file for scFIlterStats (TA-filter)
-genome2bit: 'test_annotations/mm10_chr1-118-120M.2bit' 
-# context to select to create bed files (empty means consider all contexts)
+# Genome size (for MACS2 peak calling)
+genomeSize: 2654621783
+# Two bit file for scFIlterStats (TA-filter)
+genome2bit: 'test_annotations/mm39_chr1-118-120M.2bit'
+# Context to select to create bed files (empty means consider all contexts)
 bedContext:
-# bin size to ChIC-fragments (result is bins*cells matrix)
+# Bin size to ChIC-fragments (result is bins*cells matrix)
 binSize:
-# bin size for coverage (bigwig) files
+# Bin size for coverage (bigwig) files
 bw_binsize:
-# minimum mapq threshold to extract signal from
+# Minimum mapq threshold to extract signal from
 min_mapq:
-# also count reads on genes/regions?
+# Also count reads on genes/regions?
 countRegions:
-# protocol (chic or vasa?)
-protocol: chic
-# if protocol is vasa, provide CS2 cell barcodes
-barcodes_cs2:
-# sincei path
+# Print shell commands?
+verbose:
+# Temporary directory for intermediate files
+tempDir: ${TMPDIR:-/tmp}
+# Maximum number of jobs to run in parallel
+maxJobs: 10
+# Snakemake options
+snakemakeOptions:
+# Sincei path
 sincei_path: '~/programs/sincei/bin/'

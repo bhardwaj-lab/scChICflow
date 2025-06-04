@@ -41,8 +41,10 @@ The workflow needs user to specify:
 
   1) path to the (indexed) genome fasta file
   2) path to BWA index of the genome (basename) or to the HISAT2  index on the genome depending on the dna aligner chosen (`dna_aligner` flag specified on `config.yaml`)
-  3) path to  cell barcodes (`testdata/chic_384barcodes.txt` file)
-	4) other parameters and files (see explanation in the `testdata/config.yaml` file)
+  3) path to the STAR index directory for the genome (needed only for `tchic` mode for RNA read alignment)
+  4) path to ChIC cell barcodes (`testdata/chic_384barcodes.txt` file)
+  5) path to RNA cell barcodes (`testdata/celseq2.whitelist` file)
+	6) other parameters and files (see explanation in `testdata/config.yaml`)
 
 For the real run, copy the `test_config.yaml` from the `testdata` folder to the folder where you intend to run the pipeline and replace the information with your relevant information.
 
@@ -56,7 +58,7 @@ This should only take ~5 minutes. Unzip the contents of `testdata/testdata.tar.g
 ```
 cd <scChICflow_folder>/testdata && tar -xvf testdata.tar.gz
 conda activate chicflow
-../scChICflow -i input -o . -c test_config.yaml -j 5
+../scChICflow -i test_input -o . -c test_config.yaml -j 5
 ```
 
 Here **j** is the number of parallel jobs you want to run. For other parameters, check out `scChICflow --help`
@@ -99,9 +101,9 @@ This makes HISAT2 use the `$TMPDIR` environment variable instead of the hardcode
 
 ### Description of workflow steps
 
-**The following DAG (Directed Acyclic Graph) shows the processing steps inside the workflow (with protocol: chic)**
+**The following DAG (Directed Acyclic Graph) shows the processing steps inside the chic workflow**
 
-![DAG](./testdata/chic_dag.png)
+![chicDAG](./testdata/chic_dag.png)
 
  - FASTQ: Raw .fastq formatted files from sequencing output. Read 1 from these files contain a 3 base UMI, a 8 base barcode and (expected) "A" base (due to A-tailing) followed by the genomic sequence (cut-site).
  - umi_trimming: This step uses `umi_tools extract`, with the barcode sequence ( `--extract-method=string --bc-pattern=NNNCCCCCCCC`) to remove the UMI and barcode sequence from the read and add them into the read header.
@@ -115,23 +117,19 @@ countFrags_percell: At this step, we use the function `scCountReads bins -bs 500
  - plotEnrichment, bamCoverage, estimateReadFiltering, bigwigSummary, plotCorrelation: Functions available within the [**deepTools**](https://deeptools.readthedocs.io/en/develop/) package that allow per-plate QC of ChIC-seq (and similar) data.
  - multiQC: This tool summarises the QC reports from various steps above, and allows us to compare qualities across multiple plates.
 
+The `tchic` workflow first splits the ChIC reads and the RNA reads, then processes the ChIC reads as in the `chic` protocol and the RNA reads mapping them with STAR and deduplicating them.
 
-### Expected output
+**The following DAG (Directed Acyclic Graph) shows the processing steps inside the tchic workflow**
+
+![tchicDAG](./testdata/tchic_dag.png)
+
+### Expected output of test data
 
 After the workflow runs successfully, the output directory would look like this:
 
 ```
-├── FASTQ
-├── FASTQ_trimmed
-│   ├── sortChIC-k4me1_chr1-118-120M_R1.fastq.gz
-│   └── sortChIC-k4me1_chr1-118-120M_R2.fastq.gz
-├── mapped_bam
-│   ├── sortChIC-k4me1_chr1-118-120M.bam
-│   └── sortChIC-k4me1_chr1-118-120M.bam.bai
-├── counts
-│   └── sortChIC-k4me1_chr1-118-120M.per_barcode.tsv
 ├── coverage
-│   └── sortChIC-k4me1_chr1-118-120M_dedup.cpm.bw
+│   └── tchic_H3K4me3_chr1-118-120M_dedup.cpm.bw
 ├── dedup_bam
 │   ├── sortChIC-k4me1_chr1-118-120M.bam
 │   └── sortChIC-k4me1_chr1-118-120M.bam.bai
@@ -145,9 +143,15 @@ After the workflow runs successfully, the output directory would look like this:
 │   ├── multiqc_report.html
 │   ├── plate_plots.pdf
 │   ├── scFilterStats.txt
+│   ├── tchic_H3K4me3_chr1-118-120M_split_tChIC.
+│   ├── tChIC_split_stats.png
 │   └── umi_dedup
+├── RNA_MAPPING_STAR
+│   ├── bigwigs
+│   ├── logs
+│   ├── QC
+│   └── STARsolo
 ├── logs
-├── cluster_logs
 ├── scChICflow_config.yaml
 ├── scChICflow.log
 ├── test_config.yaml
