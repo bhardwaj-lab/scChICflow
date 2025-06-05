@@ -43,6 +43,14 @@ def commonYAMLandLogs(baseDir, args, callingScript):
     config = load_configfile(args.config)
     config.update(vars(args))  # This allows modifications of args after handling a user config file to still make it to the YAML given to snakemake!
 
+    # Harmonize tempDir
+    if args.tempDir:
+        config['tempDir'] = args.tempDir
+    elif config['tempDir']:
+        args.tempDir = config['tempDir']
+    else:
+        args.tempDir = '/tmp/'
+
     snakemake_cmd = """
                     TMPDIR={tempDir} PYTHONNOUSERSITE=True snakemake {snakemakeOptions} --directory {workingdir} --snakefile {snakefile} \
                     --jobs {maxJobs} --configfile {configFile} --rerun-incomplete
@@ -57,12 +65,10 @@ def commonYAMLandLogs(baseDir, args, callingScript):
         snakemake_cmd.append("--printshellcmds")
 
     if args.cluster:
-        snakemake_cmd += ["--profile", os.path.join(baseDir, "profile/")]
-        cluster_config = load_configfile(os.path.join(baseDir, "profile/config.yaml"))
+        snakemake_cmd += ["--profile", os.path.join(baseDir, "profiles/cluster")]
 
-        if str(args.tempDir) != str(cluster_config["default-resources"]["tmpdir"]):
-            print("!!!WARNING: tempDir in the cluster configuration does not match --tempDir. --tempDir will be overridden.\n")
-            config["tempDir"] = str(cluster_config["default-resources"]["tmpdir"])
+    if args.noMappedBam:
+        config['noMappedBam'] = args.noMappedBam
 
     # Write workflow config file
     write_configfile(os.path.join(args.outdir, 'scChICflow_config.yaml'), config)
@@ -142,8 +148,7 @@ def parse_args(defaults=None):
 
     parser.add_argument("-t", "--tempDir",
                           dest="tempDir",
-                          help="Directory to store temporary files. (default: '%(default)s')",
-                          default='/tmp/'
+                          help="Directory to store temporary files. (default: '/tmp/')",
                           )
 
     parser.add_argument("-q", "--minQ",
@@ -170,6 +175,12 @@ def parse_args(defaults=None):
                           type=str,
                           required=False,
                           default=None)
+    
+    parser.add_argument("-nmb", "--noMappedBam",
+                         dest="noMappedBam",
+                         action="store_true",
+                         default=False,
+                         help="Do not keep 'mapped_bam' output files (default: '%(default)s')")
 
     parser.add_argument("-s", "--snakemakeOptions",
                           dest="snakemakeOptions",
@@ -183,7 +194,7 @@ def parse_args(defaults=None):
                          dest="cluster",
                          action="store_true",
                          default=False,
-                         help="run workflow on the cluster (requires configuration of profile/config.yaml) (default: '%(default)s')")
+                         help="run workflow on the cluster (requires configuration of profiles/cluster/config.yaml) (default: '%(default)s')")
 
     parser.add_argument("-cd", "--conda-dir",
                          dest="conda_dir",

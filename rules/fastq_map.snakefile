@@ -7,6 +7,7 @@ rule FastQC:
         outdir = "QC/FastQC"
     log: "logs/FastQC.{sample}{read}.out",
     threads: 2
+    conda: CONDA_SHARED_ENV
     shell:
         "fastqc -o {params.outdir} {input} > {log} 2>&1"
 
@@ -21,6 +22,7 @@ if downsample:
         params:
             num_reads = downsample
         threads: 10
+        conda: CONDA_SHARED_ENV
         shell:
             """
             seqtk sample -s 100 {input.r1} {params.num_reads} | pigz -p {threads} -9 > {output.r1}
@@ -40,6 +42,7 @@ rule dna_umi_trimming:
         out = "logs/umi_trimming_{sample}.out",
         err = "logs/umi_trimming_{sample}.err"
     threads: 2
+    conda: CONDA_SHARED_ENV
     shell:
         "umi_tools extract --extract-method=string --bc-pattern=NNNCCCCCCCC \
         --whitelist {params.barcodes} --filter-cell-barcode -I {input.r1} --read2-in {input.r2} \
@@ -58,6 +61,7 @@ if trim:
         params:
             opts = str(trimmerOptions or '')
         threads: 8
+        conda: CONDA_SHARED_ENV
         shell:
             """
             cutadapt -j {threads} -e 0.1 -O 5 \
@@ -75,6 +79,7 @@ if trim:
             outdir = "QC/FastQC_trimmed"
         log: "logs/FastQC_trimmed.{sample}{read}.out",
         threads: 2
+        conda: CONDA_SHARED_ENV
         shell:
             "fastqc -o {params.outdir} {input} > {log} 2>&1"
 
@@ -85,6 +90,7 @@ rule chrSizes:
     params:
         genome = genome_fasta+".fai"
     threads: 1
+    conda: CONDA_SHARED_ENV
     shell:
         "cut -f1-2 {params.genome} > {output}"
 
@@ -108,6 +114,10 @@ if dna_aligner == "hisat2" or dna_aligner == "hisat":
 else:
     mapping_cmd = "bwa mem -v 1 -T {params.mapq} -t {threads} {input.idx} {input.r1} {input.r2} 2> {log.err} | samtools view -h {params.samfilter} | " + filter_cmd
 
+if noMappedBam:
+    dna_bam_map_output = temp("mapped_bam/{sample}.bam")
+else:
+    dna_bam_map_output = "mapped_bam/{sample}.bam"
 
 rule dna_bam_map:
     input:
@@ -115,7 +125,7 @@ rule dna_bam_map:
         r2 = lambda wildcards: "FASTQ_trimmed/{sample}"+reads[1]+".fastq.gz" if trim else "FASTQ_umi_trimmed/umiTrimmed_{sample}"+reads[1]+".fastq.gz",
         idx = hisat2_index+".1.ht2" if dna_aligner == "hisat2" else bwa_index
     output:
-        bam = temp("mapped_bam/{sample}.bam")
+        bam = dna_bam_map_output
     params:
         sample = '{sample}',
         mapq = min_mapq,
@@ -126,18 +136,20 @@ rule dna_bam_map:
         out = "logs/bam_map_{sample}.out",
         err = "logs/bam_map_{sample}.err"
     threads: 24
+    conda: CONDA_SHARED_ENV
     shell: mapping_cmd
-
 
 rule dna_bam_index:
     input: "mapped_bam/{sample}.bam"
     output: temp("mapped_bam/{sample}.bam.bai")
+    conda: CONDA_SHARED_ENV
     shell: "samtools index {input}"
 
 rule dna_flagstat_bam:
     input: "mapped_bam/{sample}.bam"
     output: temp("QC/flagstat_bwa_{sample}.txt")
     threads: 1
+    conda: CONDA_SHARED_ENV
     shell: "samtools flagstat {input} > {output}"
 
 ## get some stats
@@ -150,6 +162,7 @@ rule dna_readfiltering_bam:
         mapq = min_mapq,
         blacklist = "-bl " + blacklist_bed if blacklist_bed else ""
     threads: 10
+    conda: CONDA_SHARED_ENV
     shell:
         "estimateReadFiltering -p {threads} --minMappingQuality {params.mapq} --samFlagInclude 64 \
         {params.blacklist} -b {input.bam} > {output}"
