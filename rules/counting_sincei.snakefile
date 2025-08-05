@@ -5,7 +5,7 @@ if countRegions == "windows":
             bai = expand("dedup_bam/{sample}.bam.bai", sample = samples),
             barcodes = barcode_list,
             blk = blacklist_bed
-        output: "counts/scCounts_"+binSize+"bp_bins.loom"
+        output: "counts/scCounts_"+binSize+"bp_bins.h5ad"
         params:
             bin = binSize,
             filters= "--minAlignedFraction 0.6 --GCcontentFilter '0.2,0.8'",
@@ -31,7 +31,7 @@ elif countRegions == "bed" or countRegions == "peaks":
             barcodes = barcode_list,
             blk = blacklist_bed,
             bed = lambda wildcards: bedFile if countRegions == "bed" else "macs2_peaks/peaks_union.bed"
-        output: "counts/scCounts_"+countRegions+".loom"
+        output: "counts/scCounts_"+countRegions+".h5ad"
         params:
             filters= "--minAlignedFraction 0.6 --GCcontentFilter '0.2,0.8'",
             prefix = "counts/scCounts_"+countRegions,

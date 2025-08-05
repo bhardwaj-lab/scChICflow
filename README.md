@@ -2,7 +2,6 @@
 
 Workflow for processing of [single-cell sortChIC](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9925381/) and [single-cell TChIC](https://www.biorxiv.org/content/10.1101/2024.05.09.593364v1.abstract) data.
 
-**Author: Vivek Bhardwaj (@vivekbhr)**
 
 ## Installation and configuration
 
@@ -19,20 +18,20 @@ git clone https://github.com/vivekbhr/scChICflow.git
 
 ### 2. Set up the tools needed for the workflow
 
-Go to the scChICflow directory and install the tools using conda.
+Go to the scChICflow directory and install the tools using conda:
 
 ```
 cd scChICflow
 conda env create -f env.yaml -n chicflow
 ```
 
-**Note:** Setup of this conda environment has been tested with linux, and conda v24. If it takes too long and/or creates conflicts, try removing the conflicting packages from the `env.yaml` file and installing them manually afterwards.
-
-Additionally the tool `split_fastq.py` needs to be installed manually for the TChIC workflow:
+Next, install the tool `split_fastq.py`, which is required for the TChIC workflow:
 
 ```
 cd scChICflow/tools && python splitfastq_install.py build_ext --inplace && cd -
 ```
+
+**Note:** Setup of this conda environment has been tested with linux, and conda v24. If it takes too long and/or creates conflicts, try removing the conflicting packages from the `env.yaml` file and installing them manually afterwards.
 
 
 ### 3. Prepare the config.yaml
@@ -160,7 +159,25 @@ After the workflow runs successfully, the output directory would look like this:
 
 ```
 
-**For a better understanding of the processing steps and the output files, have a look at our [sortChIC book chapter]()**
+**For a better understanding of the processing steps and the output files for single-cell sortChIC, have a look at our [sortChIC book chapter](https://link.springer.com/protocol/10.1007/978-1-0716-4071-5_14)**
+
+## Citation
+
+If you use scChICflow to process T-ChIC data, please cite:  
+
+```
+Bhardwaj, V., Griffa, A., Gaza, H.V, Zeller, P., van Oudenaarden, A. (2024)
+Single-cell multi-omic analysis reveals principles of transcription-chromatin interaction during embryogenesis
+bioRxiv 2024.09.23.614335; doi: https://doi.org/10.1101/2024.09.23.614335
+```
+
+If you use scChICflow to process sortChIC data, please cite:  
+
+```
+Gaza, H.V., Bhardwaj, V., Zeller, P. (2024).
+Single-Cell Histone Modification Profiling with Cell Enrichment Using sortChIC.
+In: Greulich, F. (eds) Chromatin Immunoprecipitation. Methods in Molecular Biology, vol 2846. Humana, New York, NY. https://doi.org/10.1007/978-1-0716-4071-5_14
+```
 
 ## Notes
 
