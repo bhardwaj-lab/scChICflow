@@ -16,7 +16,7 @@ rule multiQC:
     output: "QC/multiqc_report.html"
     params:
         outdir = "QC",
-        ignore = lambda wildcards: "FASTQ/*" if trim else ""
+        ignore = lambda wildcards: "-x FASTQ/*" if trim else ""
     log:
         out = "logs/multiqc.out",
         err = "logs/multiqc.err"
@@ -30,7 +30,7 @@ rule countFrags_perCell:
     input:
         bam = "dedup_bam/{sample}.bam",
         bai = "dedup_bam/{sample}.bam.bai"
-    output: "counts/{sample}.per_barcode.tsv"
+    output: temp("counts/{sample}.per_barcode.tsv")
     log: "logs/counts_{sample}.out"
     threads: 1
     conda: CONDA_SHARED_ENV
@@ -40,6 +40,21 @@ rule countFrags_perCell:
         sed 's/[[:space:]]BC:Z://' | sort | uniq -c | \
         awk 'OFS="\\t" {{ print $2, $1 }}' > {output} 2> {log}
         """
+
+rule collect_countFrags_perCell:
+    input:
+        counts = expand("counts/{sample}.per_barcode.tsv", sample = samples),
+        barcodes = barcode_list
+    output: "counts/counts_per_barcode.tsv"
+    params:
+        countdir = "counts",
+        pyscript = os.path.join(workflow.basedir, "tools", "collect_countFrags_perCell.py")
+    log: "logs/collect_countFrags_perCell.out"
+    threads: 1
+    conda: CONDA_SHARED_ENV
+    shell:
+        "python {params.pyscript} {input.barcodes} {input.countdir} {output} > {log}"
+
 
 rule plate_plot:
     input:
@@ -51,7 +66,7 @@ rule plate_plot:
         rscript = os.path.join(workflow.basedir, "tools", "make_plate_plots.R")
     log: "logs/plate_plots.out"
     threads: 1
-    #conda: CONDA_SHARED_ENV
+    conda: CONDA_SHARED_ENV
     shell:
         "Rscript {params.rscript} {input.barcodes} {params.countdir} {output} > {log}"
 

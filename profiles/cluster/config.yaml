@@ -1,0 +1,98 @@
+# scChICflow snakemake profile configuration for SLURM cluster execution
+jobname: '{rule}.{wildcards}.{jobid}'
+executor: slurm
+
+latency-wait: 600 # seconds
+retries: 1
+
+# To use the conda environment
+use-conda: True
+conda-frontend: conda
+conda-prefix: 'path/to/your/conda/envs/' # Change this to your conda env path
+
+# Default resources
+default-resources:
+  runtime: f"{8 * attempt}h"
+  mem_mb: f"{32768 * attempt}"
+  disk_mb: f"{input.size_mb * (1 + attempt)}"
+  tmpdir: "'/path/to/tmpdir'" # Needs double quotes
+  cpus_per_task: 1
+  slurm_extra: "'--mail-type=FAIL --mail-user=your@email.com'" # Change this to your email. Needs double quotes
+
+# Set resources per rule
+set-resources:
+  bam_coverage_dedup:
+    cpus_per_task: 16
+  bwSummary:
+    cpus_per_task: 8
+  count_regions:
+    cpus_per_task: 16
+  dna_bam_map:
+    mem_mb: f"{32768 * (2 + attempt)}"
+    cpus_per_task: 24
+  dna_cutadapt:
+    cpus_per_task: 8
+  dna_umi_trimming:
+    cpus_per_task: 4
+  dna_FastQC_trimmed:
+    cpus_per_task: 4
+  dna_readfiltering_bam:
+    cpus_per_task: 16
+  downsample:
+    cpus_per_task: 16
+  FastQC:
+    cpus_per_task: 4
+  plotEnrichment:
+    cpus_per_task: 8
+  plotEnrichment_biotype:
+    cpus_per_task: 8
+  read_filtering_dedup:
+    cpus_per_task: 16
+  rna_cutadapt:
+    cpus_per_task: 16
+  rna_dedupBAMunique:
+    mem_mb: f"{32768 * (2 + attempt)}"
+  rna_filterBAMunique:
+    mem_mb: f"{32768 * (1 + attempt)}"
+    cpus_per_task: 16
+  rna_getBW:
+    cpus_per_task: 24
+  rna_indexBAM:
+    cpus_per_task: 8
+  rna_mapReads:
+    mem_mb: f"{32768 * (2 + attempt)}"
+    cpus_per_task: 24
+  scFilterStats:
+    cpus_per_task: 16
+  split_tChIC:
+    runtime: f"{12 * attempt}h"
+    mem_mb: max(10 * input.size_mb * (1 + attempt), 65536)
+    cpus_per_task: 16
+  split_fastq_dna:
+    mem_mb: f"{32768 * (1 + attempt)}"
+  split_fastq_rna:
+    mem_mb: f"{32768 * (1 + attempt)}"
+
+
+# Override threads field to match cpus_per_task
+set-threads:
+  bam_coverage_dedup: 16
+  bwSummary: 8
+  count_regions: 16
+  dna_bam_map: 24
+  dna_cutadapt: 8
+  dna_umi_trimming: 4
+  dna_FastQC_trimmed: 4
+  dna_readfiltering_bam: 16
+  downsample: 16
+  FastQC: 4
+  plotEnrichment: 8
+  plotEnrichment_biotype: 8
+  read_filtering_dedup: 16
+  rna_cutadapt: 16
+  rna_filterBAMunique: 16
+  rna_getBW: 24
+  rna_indexBAM: 8
+  rna_mapReads: 24
+  scFilterStats: 16
+  split_tChIC: 16

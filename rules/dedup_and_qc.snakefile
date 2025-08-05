@@ -13,21 +13,22 @@ rule umi_dedup:
     params:
         mapq = min_mapq,
         sample = "{sample}",
-        tmp = tempDir,
         celltag = 'BC'
-#        paired = "--paired --unmapped-reads use" if protocol == "tchic" else ""
+        #paired = "--paired --unmapped-reads use" if protocol == "tchic" else ""
     log:
         out = "logs/umi_dedup_{sample}.out",
         err = "logs/umi_dedup_{sample}.err"
     threads: 1
     conda: CONDA_SHARED_ENV
     shell:
-        "umi_tools dedup --mapping-quality {params.mapq} \
-        --per-cell --umi-tag=RX --cell-tag={params.celltag} --extract-umi-method=tag \
+        """
+        umi_tools dedup --mapping-quality {params.mapq} \
+        --per-cell --umi-tag RX --cell-tag {params.celltag} --extract-umi-method tag \
         --method unique --spliced-is-unique --soft-clip-threshold 2 \
         --output-stats=QC/umi_dedup/{params.sample} \
-        --temp-dir={params.tmp} \
-        -I {input.bam} -L {log.out} > {output.bam} 2> {log.err}"
+        --temp-dir $TMPDIR \
+        -I {input.bam} -L {log.out} > {output.bam} 2> {log.err}
+        """
 
 
 rule index_dedup:
